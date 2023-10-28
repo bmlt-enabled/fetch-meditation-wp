@@ -1,0 +1,53 @@
+#fetch-meditation-date {
+    text-align: center;
+    font-size: x-large;
+    margin-top: 1em;
+}
+
+#fetch-meditation-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: xx-large;
+    margin-bottom: .5em;
+}
+
+#fetch-meditation-page {
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+#fetch-meditation-quote {
+    text-align: left;
+    font-style: italic;
+    font-size: large;
+    margin-bottom: 1em;
+}
+
+#fetch-meditation-quote-source {
+    text-align: right;
+    margin-bottom: 1em;
+}
+
+#fetch-meditation-thought {
+    margin-left:10%;
+    margin-right: 10%;
+    margin-bottom: 2em;
+    padding-top: 1em;
+    border-top: 2px solid black;
+}
+
+#fetch-meditation-copyright {
+    font-style: italic;
+    text-align: center;
+    font-size: small;
+    margin-bottom: 1em;
+}
+
+#fetch-meditation-divider {
+    visibility: hidden !important;
+}
+
+#fetch-meditation-container {
+    margin:0 auto;
+    font-size: medium;
+}
