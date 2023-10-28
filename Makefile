@@ -2,6 +2,7 @@ COMMIT := $(shell git rev-parse --short=8 HEAD)
 ZIP_FILENAME := $(or $(ZIP_FILENAME), $(shell echo "$${PWD\#\#*/}.zip"))
 BUILD_DIR := $(or $(BUILD_DIR),"build")
 VENDOR_AUTOLOAD := vendor/autoload.php
+ZIP_FILE := build/fetch-meditation-wp.zip
 
 ifeq ($(PROD)x, x)
 	COMPOSER_ARGS := --prefer-dist --no-progress
