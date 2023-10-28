@@ -1,0 +1,20 @@
+{
+  "name": "bmlt/fetch-meditation-wp",
+  "description": "This is a WordPress plugin for BMLT.",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "pjaudiomv"
+    },
+    {
+      "name": "bmlt-enabled"
+    }
+  ],
+  "require": {
+    "bmlt/fetch-meditation": "1.0.4"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "3.*"
+  }
+}
