@@ -1,8 +1,8 @@
 === Fetch Meditation ===
 
-Contributors:bmltenabled, pjaudiomv
+Contributors: bmltenabled, pjaudiomv
 Plugin URI: https://wordpress.org/plugins/fetch-meditation-wp/
-Tags: na, fetch, meditation, jft, spad
+Tags: na, fetch, meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.3.2
 Stable tag: 1.0.0
@@ -11,7 +11,21 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-To use this, specify [fetch_meditation] in your text code.
+Fetch Meditation is a plugin that pulls either the Spiritual Principle A Day or Just For Today and puts it on your page or post.
+
+To use this, specify the shortcode [fetch_meditation] in your page or post.
+
+SHORTCODE
+Basic: [fetch_meditation]
+Book: jft, spad [fetch_meditation book=&quot;jft&quot;]
+Layout: table, block [fetch_meditation layout=&quot;block&quot;]
+Language (JFT Only): english, french, italian, portuguese, russian, spanish, swedish [fetch_meditation language=&quot;spanish&quot;]
+
+
+MORE INFORMATION
+
+<a href="https://github.com/bmlt-enabled/fetch-meditation-wp" target="_blank">https://github.com/bmlt-enabled/fetch-meditation-wp</a>
+
 
 == Installation ==
 

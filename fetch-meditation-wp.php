@@ -5,7 +5,7 @@
  * Plugin URI: https://wordpress.org/plugins/fetch-meditation-wp/
  * Contributors:  pjaudiomv, bmltenabled
  * Author: bmlt-enabled
- * Description: To use this, specify [fetch_meditation] in your text code.
+ * Description: Display a daily meditation on your site. To use this, specify [fetch_meditation] in your text code.
  * Version: 1.0.0
  * Install: Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  */
@@ -35,6 +35,11 @@ class FETCHMEDITATION
     private const SETTINGS_GROUP = 'fetch-meditation-group';
     private const DEFAULT_LANGUAGE = 'English';
     private const DEFAULT_BOOK = 'JFT';
+
+    private const DEFAULT_LAYOUT = 'table';
+
+    private const PLUG_SLUG = 'fetch-meditation';
+
     /**
      * Singleton instance of the class.
      *
@@ -64,20 +69,22 @@ class FETCHMEDITATION
         if (is_admin()) {
             add_action('admin_menu', [static::class, 'createMenu']);
             add_action('admin_init', [static::class, 'registerSettings']);
+            add_action("admin_enqueue_scripts", [$this, "enqueueBackendFiles"], 500);
         } else {
-            add_shortcode('fetch_meditation', [static::class, 'setupShortcode']);
+            add_action("wp_enqueue_scripts", [$this, "enqueueFrontendFiles"]);
+            add_shortcode('fetch_meditation', [static::class, 'renderShortcode']);
         }
     }
 
-    public static function setupShortcode(string|array $attrs = []): string
+    public static function renderShortcode(string|array $attrs = []): string
     {
-        $language = !empty($attrs['language']) ? sanitize_text_field(strtolower($attrs['language'])) : get_option('fetch_meditation_language');
-        $book = !empty($attrs['book']) ? sanitize_text_field(strtolower($attrs['book'])) : get_option('fetch_meditation_book');
-        print_r($attrs);
-        if ($book === "spad") {
-            $selectedLanguage = SPADLanguage::English;
-        } else {
-            $selectedLanguage = match ($language) {
+        $book = sanitize_text_field(strtolower($attrs['book'] ?? get_option('fetch_meditation_book')));
+        $layout = sanitize_text_field(strtolower($attrs['layout'] ?? get_option('fetch_meditation_layout')));
+        $language = sanitize_text_field(strtolower($attrs['language'] ?? get_option('fetch_meditation_language')));
+
+        $selectedLanguage = ($book === "spad")
+            ? SPADLanguage::English
+            : match ($language) {
                 'english' => JFTLanguage::English,
                 'french' => JFTLanguage::French,
                 'italian' => JFTLanguage::Italian,
@@ -88,58 +95,67 @@ class FETCHMEDITATION
                 'swedish' => JFTLanguage::Swedish,
                 default => JFTLanguage::English
             };
-        }
 
-        if ($book === "spad") {
-            $settings = new SPADSettings($selectedLanguage);
-            $spad = SPAD::getInstance($settings);
-            $entry = $spad->fetch();
-        } else {
-            $settings = new JFTSettings($selectedLanguage);
-            $jft = JFT::getInstance($settings);
-            $entry = $jft->fetch();
-        }
+        $settings = ($book === "spad") ? new SPADSettings($selectedLanguage) : new JFTSettings($selectedLanguage);
+        $instance = ($book === "spad") ? SPAD::getInstance($settings) : JFT::getInstance($settings);
+        $entry = $instance->fetch();
+        return static::buildLayout($entry, $layout === "block");
+    }
 
-        $paragraphs = "";
+    private static function buildLayout(object $entry, bool $inBlock): string
+    {
+        $cssIdentifier = $inBlock ? 'fetch-meditation' : 'fetch-meditation-table';
+
+        $paragraphContent = '';
+        $count = 1;
+
         foreach ($entry->content as $c) {
-            $paragraphs .= "<p>{$c}</p>";
+            $paragraphContent .= "<p id=\"$cssIdentifier-content-$count\" class=\"$cssIdentifier-element\">$c</p>";
+            $count++;
         }
-        $content = '';
+
+        $content = $inBlock
+            ? '<div id="' . $cssIdentifier . '-container" class="' . $cssIdentifier . '">'
+            : '<table align="center" id="' . $cssIdentifier . '-container" class="' . $cssIdentifier . '">';
+
         $data = [
             'date' => $entry->date,
             'title' => $entry->title,
             'page' => $entry->page,
             'quote' => $entry->quote,
             'source' => $entry->source,
-            'paragraphs' => $paragraphs,
+            'paragraphs' => $paragraphContent,
             'thought' => $entry->thought,
             'copyright' => $entry->copyright,
         ];
 
         foreach ($data as $key => $value) {
             if (!empty($value)) {
-                $content .= '<tr><td align="' . ($key === 'title' ? 'center' : 'left') . '">' . ($key === 'quote' ? '<i>' : '') . $value . ($key === 'quote' ? '</i>' : '') . '<br><br></td></tr>';
+                $content .= $inBlock
+                    ? "<div id=\"$cssIdentifier-$key\" class=\"$cssIdentifier\">$value</div>"
+                    : '<tr><td align="' . ($key === 'title' ? 'center' : 'left') . '">' .
+                    ($key === 'quote' ? '<i>' : '') . $value .
+                    ($key === 'quote' ? '</i>' : '') . '<br><br></td></tr>';
             }
         }
-        return <<<HTML
-<!DOCTYPE html>
-<html lang="en-US">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Just for Today Meditation</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=yes">
-    <meta http-equiv="expires" content="-1">
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Cache-Control" content="no-cache" />
-    <meta charset="UTF-8" />
-</head>
-<body>
-<table align="center">
-    {$content}
-</table>
-</body>
-</html>
-HTML;
+
+        $content .= $inBlock ? '</div>' : '</table>';
+        return $content;
+    }
+
+
+    public function enqueueBackendFiles(string $hook): void
+    {
+        if ($hook !== 'settings_page_' . self::PLUG_SLUG) {
+            return;
+        }
+        $baseUrl = plugin_dir_url(__FILE__);
+        wp_enqueue_script('fetch-meditation-admin', $baseUrl . 'js/fetch-meditation.js', ['jquery'], filemtime(plugin_dir_path(__FILE__) . 'js/fetch-meditation.js'), false);
+    }
+
+    public function enqueueFrontendFiles(): void
+    {
+        wp_enqueue_style(self::PLUG_SLUG, plugin_dir_url(__FILE__) . 'css/fetch-meditation.css', false, '1.0.0', 'all');
     }
 
     public static function registerSettings(): void
@@ -155,6 +171,11 @@ HTML;
             'default' => self::DEFAULT_BOOK,
             'sanitize_callback' => 'sanitize_text_field',
         ]);
+        register_setting(self::SETTINGS_GROUP, 'fetch_meditation_layout', [
+            'type' => 'string',
+            'default' => self::DEFAULT_LAYOUT,
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
     }
 
     public static function createMenu(): void
@@ -164,7 +185,7 @@ HTML;
             esc_html__('Fetch Meditation Settings'), // Page Title
             esc_html__('Fetch Meditation'),          // Menu Title
             'manage_options',            // Capability
-            'fetch-meditation',                      // Menu Slug
+            self::PLUG_SLUG,                      // Menu Slug
             [static::class, 'drawSettings']      // Callback function to display the page content
         );
         // Add a settings link in the plugins list
@@ -174,7 +195,7 @@ HTML;
     public static function settingsLink(array $links): array
     {
         // Add a "Settings" link for the plugin in the WordPress admin
-        $settings_url = admin_url('options-general.php?page=fetch-meditation');
+        $settings_url = admin_url('options-general.php?page=' . self::PLUG_SLUG);
         $links[] = "<a href='{$settings_url}'>Settings</a>";
         return $links;
     }
@@ -182,8 +203,9 @@ HTML;
     public static function drawSettings(): void
     {
         // Display the plugin's settings page
-        $meditationLanguage = esc_attr(get_option('fetch_meditation_language'));
         $meditationBook = esc_attr(get_option('fetch_meditation_book'));
+        $meditationLayout = esc_attr(get_option('fetch_meditation_layout'));
+        $meditationLanguage = esc_attr(get_option('fetch_meditation_language'));
         ?>
         <div class="wrap">
             <h2>Fetch Meditation Settings</h2>
@@ -197,6 +219,15 @@ HTML;
                             <?php echo static::renderSelectOption('fetch_meditation_book', $meditationBook, [
                                 'jft' => 'JFT',
                                 'spad' => 'SPAD',
+                            ]); ?>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Layout</th>
+                        <td>
+                            <?php echo static::renderSelectOption('fetch_meditation_layout', $meditationLayout, [
+                                'table' => 'Table',
+                                'block' => 'Block (CSS)',
                             ]); ?>
                         </td>
                     </tr>
@@ -218,21 +249,6 @@ HTML;
                 <?php submit_button(); ?>
             </form>
         </div>
-        <script>
-            jQuery(document).ready(function($) {
-                // Only show language dropdown for JFT
-                if ($('#fetch_meditation_book').val() === 'spad') {
-                    $('#language-container').hide();
-                }
-                $('#fetch_meditation_book').change(function() {
-                    if ($(this).val() === 'jft') {
-                        $('#language-container').show();
-                    } else {
-                        $('#language-container').hide();
-                    }
-                });
-            });
-        </script>
         <?php
     }
 
