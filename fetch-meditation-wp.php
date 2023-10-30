@@ -240,6 +240,7 @@ class FETCHMEDITATION
                                 'french' => 'French',
                                 'german' => 'German',
                                 'italian' => 'Italian',
+                                'japanese' => 'Japanese',
                                 'portuguese' => 'Portuguese',
                                 'russian' => 'Russian',
                                 'spanish' => 'Spanish',
