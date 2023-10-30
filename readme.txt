@@ -19,7 +19,7 @@ SHORTCODE
 Basic: [fetch_meditation]
 Book: jft, spad [fetch_meditation book=&quot;jft&quot;]
 Layout: table, block [fetch_meditation layout=&quot;block&quot;]
-Language (JFT Only): english, french, italian, portuguese, russian, spanish, swedish [fetch_meditation language=&quot;spanish&quot;]
+Language (JFT Only): english, french, german, italian, portuguese, russian, spanish, swedish [fetch_meditation language=&quot;spanish&quot;]
 
 
 MORE INFORMATION

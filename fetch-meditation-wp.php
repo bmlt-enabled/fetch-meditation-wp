@@ -87,6 +87,7 @@ class FETCHMEDITATION
             : match ($language) {
                 'english' => JFTLanguage::English,
                 'french' => JFTLanguage::French,
+                'german' => JFTLanguage::German,
                 'italian' => JFTLanguage::Italian,
                 'japanese' => JFTLanguage::Japanese,
                 'portuguese' => JFTLanguage::Portuguese,
@@ -237,6 +238,7 @@ class FETCHMEDITATION
                             <?php echo static::renderSelectOption('fetch_meditation_language', $meditationLanguage, [
                                 'english' => 'English',
                                 'french' => 'French',
+                                'german' => 'German',
                                 'italian' => 'Italian',
                                 'portuguese' => 'Portuguese',
                                 'russian' => 'Russian',
