@@ -105,19 +105,25 @@ class FETCHMEDITATION
 
     private static function buildLayout(object $entry, bool $inBlock): string
     {
-        $cssIdentifier = $inBlock ? 'fetch-meditation' : 'fetch-meditation-table';
+        $cssIdentifier = $inBlock ? 'meditation' : 'meditation-table';
 
         $paragraphContent = '';
         $count = 1;
 
         foreach ($entry->content as $c) {
-            $paragraphContent .= "<p id=\"$cssIdentifier-content-$count\" class=\"$cssIdentifier-element\">$c</p>";
+            if ($inBlock) {
+                $paragraphContent .= "\n    <p id=\"$cssIdentifier-content-$count\" class=\"$cssIdentifier-rendered-element\">$c</p>";
+            } else {
+                $paragraphContent .= "$c<br><br>";
+            }
             $count++;
         }
+        $paragraphContent .= "\n";
 
-        $content = $inBlock
-            ? '<div id="' . $cssIdentifier . '-container" class="' . $cssIdentifier . '">'
-            : '<table align="center" id="' . $cssIdentifier . '-container" class="' . $cssIdentifier . '">';
+        $content = "\n<div id=\"$cssIdentifier-container\" class=\"meditation-rendered-element\">\n";
+        if (!$inBlock) {
+            $content .= '<table align="center">' . "\n";
+        }
 
         $data = [
             'date' => $entry->date,
@@ -131,16 +137,30 @@ class FETCHMEDITATION
         ];
 
         foreach ($data as $key => $value) {
-            if (!empty($value)) {
-                $content .= $inBlock
-                    ? "<div id=\"$cssIdentifier-$key\" class=\"$cssIdentifier\">$value</div>"
-                    : '<tr><td align="' . ($key === 'title' ? 'center' : 'left') . '">' .
-                    ($key === 'quote' ? '<i>' : '') . $value .
-                    ($key === 'quote' ? '</i>' : '') . '<br><br></td></tr>';
+            if (empty($value)) {
+                continue;
+            }
+
+            if ($key === 'quote' && !$inBlock) {
+                $element = '<i>' . $value . '</i>';
+            } elseif ($key === 'title' && !$inBlock) {
+                $element = '<h1>' . $value . '</h1>';
+            } elseif ($key === 'date' && !$inBlock) {
+                $element = '<h2>' . $value . '</h2>';
+            } else {
+                $element = $value;
+            }
+
+            if ($inBlock) {
+                $content .= "  <div id=\"$cssIdentifier-$key\" class=\"$cssIdentifier-rendered-element\">$element</div>\n";
+            } else {
+                $alignment = in_array($key, ['title', 'page', 'source']) ? 'center' : 'left';
+                $lineBreak = in_array($key, ['quote-source', 'quote', 'thought', 'page']) ? '<br><br>' : '';
+                $content .= "<tr><td align=\"$alignment\">$element$lineBreak</td></tr>\n";
             }
         }
 
-        $content .= $inBlock ? '</div>' : '</table>';
+        $content .= $inBlock ? "</div>\n" : "</table>\n</div>\n";
         return $content;
     }
 
@@ -185,9 +205,9 @@ class FETCHMEDITATION
         add_options_page(
             esc_html__('Fetch Meditation Settings'), // Page Title
             esc_html__('Fetch Meditation'),          // Menu Title
-            'manage_options',            // Capability
-            self::PLUG_SLUG,                      // Menu Slug
-            [static::class, 'drawSettings']      // Callback function to display the page content
+            'manage_options',                        // Capability
+            self::PLUG_SLUG,                         // Menu Slug
+            [static::class, 'drawSettings']          // Callback function to display the page content
         );
         // Add a settings link in the plugins list
         add_filter('plugin_action_links_' . plugin_basename(__FILE__), [static::class, 'settingsLink']);

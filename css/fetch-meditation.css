@@ -1,53 +1,88 @@
-#fetch-meditation-date {
-    text-align: center;
+#meditation-date {
+    text-align: left;
     font-size: x-large;
     margin-top: 1em;
 }
 
-#fetch-meditation-title {
+#meditation-title {
     text-align: center;
     font-weight: bold;
     font-size: xx-large;
     margin-bottom: .5em;
 }
 
-#fetch-meditation-page {
+#meditation-page {
     text-align: center;
     margin-bottom: 1em;
 }
 
-#fetch-meditation-quote {
-    text-align: left;
+#meditation-quote {
+    text-align: center;
     font-style: italic;
     font-size: large;
     margin-bottom: 1em;
 }
 
-#fetch-meditation-quote-source {
+#meditation-quote-source {
     text-align: right;
     margin-bottom: 1em;
 }
 
-#fetch-meditation-thought {
+#meditation-thought {
+    font-style: italic;
     margin-left:10%;
     margin-right: 10%;
     margin-bottom: 2em;
     padding-top: 1em;
-    border-top: 2px solid black;
 }
 
-#fetch-meditation-copyright {
+#meditation-copyright {
     font-style: italic;
     text-align: center;
     font-size: small;
     margin-bottom: 1em;
 }
 
-#fetch-meditation-divider {
+#meditation-divider {
     visibility: hidden !important;
 }
 
-#fetch-meditation-container {
+#meditation-container {
     margin:0 auto;
     font-size: medium;
+    font-family: 'times new roman', serif;
+}
+
+@media (min-width: 750px) and (max-width: 800px) {
+    .meditation-rendered-element table {
+        width: 85%;
+    }
+    .meditation-rendered-element body,
+    .meditation-rendered-element table {
+        font-size: 13px;
+        font-family: 'times new roman';
+    }
+    .meditation-rendered-element h1 {
+        font-size: 18px;
+    }
+    .meditation-rendered-element h2 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .meditation-rendered-element table {
+        width: 85%;
+    }
+    .meditation-rendered-element body,
+    .meditation-rendered-element table {
+        font-size: 9px;
+        font-family: 'times new roman';
+    }
+    .meditation-rendered-element h1 {
+        font-size: 14px;
+    }
+    .meditation-rendered-element h2 {
+        font-size: 12px;
+    }
 }
