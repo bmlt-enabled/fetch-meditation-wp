@@ -76,11 +76,32 @@ class FETCHMEDITATION
         }
     }
 
+    /**
+     * Determines the option value based on the provided attributes or fallbacks to a default value.
+     *
+     * @param string|array $attrs An string or associative array of attributes where the key is the option name.
+     * @param string $option The specific option to fetch (e.g., 'language', 'book', 'layout').
+     * @return string Sanitized and lowercased value of the determined option.
+     */
+    private static function determineOption(string|array $attrs, string $option): string
+    {
+        if (isset($_GET[$option])) {
+            // Query String Option
+            return sanitize_text_field(strtolower($_GET[$option]));
+        } elseif (!empty($attrs[$option])) {
+            // Shortcode Option
+            return sanitize_text_field(strtolower($attrs[$option]));
+        } else {
+            // Settings Option or Default
+            return sanitize_text_field(strtolower(get_option('fetch_meditation_' . $option)));
+        }
+    }
+
     public static function renderShortcode(string|array $attrs = []): string
     {
-        $book = sanitize_text_field(strtolower($attrs['book'] ?? get_option('fetch_meditation_book')));
-        $layout = sanitize_text_field(strtolower($attrs['layout'] ?? get_option('fetch_meditation_layout')));
-        $language = sanitize_text_field(strtolower($attrs['language'] ?? get_option('fetch_meditation_language')));
+        $language = self::determineOption($attrs, 'language');
+        $book = self::determineOption($attrs, 'book');
+        $layout = self::determineOption($attrs, 'layout');
 
         $selectedLanguage = ($book === "spad")
             ? SPADLanguage::English
@@ -97,6 +118,7 @@ class FETCHMEDITATION
                 default => JFTLanguage::English
             };
 
+        // SPAD only supports english
         $settings = ($book === "spad") ? new SPADSettings($selectedLanguage) : new JFTSettings($selectedLanguage);
         $instance = ($book === "spad") ? SPAD::getInstance($settings) : JFT::getInstance($settings);
         $entry = $instance->fetch();
@@ -105,6 +127,7 @@ class FETCHMEDITATION
 
     private static function buildLayout(object $entry, bool $inBlock): string
     {
+        // Render Content As HTML Table or CSS Block Elements
         $cssIdentifier = $inBlock ? 'meditation' : 'meditation-table';
 
         $paragraphContent = '';
