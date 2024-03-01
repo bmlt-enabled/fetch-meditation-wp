@@ -32,7 +32,7 @@
 
     <!--
     You can hard-code ignore patterns directly into your
-    custom standard so you don't have to specify the
+    custom standard, so you don't have to specify the
     patterns on the command line.
     -->
     <exclude-pattern>vendor/*</exclude-pattern>
@@ -42,5 +42,6 @@
     -->
     <rule ref="WordPress-Core">
         <exclude name="WordPress.Files.FileName.InvalidClassFileName" />
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
     </rule>
 </ruleset>
