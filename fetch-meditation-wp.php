@@ -53,7 +53,7 @@ class FETCHMEDITATION {
 	 * Constructor method for initializing the plugin.
 	 */
 	public function __construct() {
-		add_action( 'init', array( $this, 'plugin_setup' ) );
+		add_action( 'init', [ $this, 'plugin_setup' ] );
 	}
 
 	/**
@@ -67,12 +67,12 @@ class FETCHMEDITATION {
 	 */
 	public function plugin_setup(): void {
 		if ( is_admin() ) {
-			add_action( 'admin_menu', array( static::class, 'create_menu' ) );
-			add_action( 'admin_init', array( static::class, 'register_settings' ) );
-			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_files' ), 500 );
+			add_action( 'admin_menu', [ static::class, 'create_menu' ] );
+			add_action( 'admin_init', [ static::class, 'register_settings' ] );
+			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_backend_files' ], 500 );
 		} else {
-			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_files' ) );
-			add_shortcode( 'fetch_meditation', array( static::class, 'render_shortcode' ) );
+			add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_files' ] );
+			add_shortcode( 'fetch_meditation', [ static::class, 'render_shortcode' ] );
 		}
 	}
 
@@ -96,7 +96,7 @@ class FETCHMEDITATION {
 		}
 	}
 
-	public static function render_shortcode( string|array $attrs = array() ): string {
+	public static function render_shortcode( string|array $attrs = [] ): string {
 		$language = self::determine_option( $attrs, 'language' );
 		$book     = self::determine_option( $attrs, 'book' );
 		$layout   = self::determine_option( $attrs, 'layout' );
@@ -145,7 +145,7 @@ class FETCHMEDITATION {
 			$content .= '<table align="center">' . "\n";
 		}
 
-		$data = array(
+		$data = [
 			'date'       => $entry->date,
 			'title'      => $entry->title,
 			'page'       => $entry->page,
@@ -154,7 +154,7 @@ class FETCHMEDITATION {
 			'paragraphs' => $paragraph_content,
 			'thought'    => $entry->thought,
 			'copyright'  => $entry->copyright,
-		);
+		];
 
 		foreach ( $data as $key => $value ) {
 			if ( empty( $value ) ) {
@@ -174,8 +174,8 @@ class FETCHMEDITATION {
 			if ( $in_block ) {
 				$content .= "  <div id=\"$css_identifier-$key\" class=\"$css_identifier-rendered-element\">$element</div>\n";
 			} else {
-				$alignment = in_array( $key, array( 'title', 'page', 'source' ) ) ? 'center' : 'left';
-				$line_break = in_array( $key, array( 'quote-source', 'quote', 'thought', 'page' ) ) ? '<br><br>' : '';
+				$alignment = in_array( $key, [ 'title', 'page', 'source' ] ) ? 'center' : 'left';
+				$line_break = in_array( $key, [ 'quote-source', 'quote', 'thought', 'page' ] ) ? '<br><br>' : '';
 				$content  .= "<tr><td align=\"$alignment\">$element$line_break</td></tr>\n";
 			}
 		}
@@ -190,7 +190,7 @@ class FETCHMEDITATION {
 			return;
 		}
 		$base_url = plugin_dir_url( __FILE__ );
-		wp_enqueue_script( 'fetch-meditation-admin', $base_url . 'js/fetch-meditation.js', array( 'jquery' ), filemtime( plugin_dir_path( __FILE__ ) . 'js/fetch-meditation.js' ), false );
+		wp_enqueue_script( 'fetch-meditation-admin', $base_url . 'js/fetch-meditation.js', [ 'jquery' ], filemtime( plugin_dir_path( __FILE__ ) . 'js/fetch-meditation.js' ), false );
 	}
 
 	public function enqueue_frontend_files(): void {
@@ -202,29 +202,29 @@ class FETCHMEDITATION {
 		register_setting(
 			self::SETTINGS_GROUP,
 			'fetch_meditation_language',
-			array(
+			[
 				'type'              => 'string',
 				'default'           => self::DEFAULT_LANGUAGE,
 				'sanitize_callback' => 'sanitize_text_field',
-			)
+			]
 		);
 		register_setting(
 			self::SETTINGS_GROUP,
 			'fetch_meditation_book',
-			array(
+			[
 				'type'              => 'string',
 				'default'           => self::DEFAULT_BOOK,
 				'sanitize_callback' => 'sanitize_text_field',
-			)
+			]
 		);
 		register_setting(
 			self::SETTINGS_GROUP,
 			'fetch_meditation_layout',
-			array(
+			[
 				'type'              => 'string',
 				'default'           => self::DEFAULT_LAYOUT,
 				'sanitize_callback' => 'sanitize_text_field',
-			)
+			]
 		);
 	}
 
@@ -235,10 +235,10 @@ class FETCHMEDITATION {
 			esc_html__( 'Fetch Meditation' ),          // Menu Title
 			'manage_options',                        // Capability
 			self::PLUG_SLUG,                         // Menu Slug
-			array( static::class, 'draw_settings' )          // Callback function to display the page content
+			[ static::class, 'draw_settings' ]         // Callback function to display the page content
 		);
 		// Add a settings link in the plugins list
-		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( static::class, 'settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [ static::class, 'settings_link' ] );
 	}
 
 	public static function settings_link( array $links ): array {
@@ -264,13 +264,19 @@ class FETCHMEDITATION {
 						<th scope="row">Book</th>
 						<td>
 							<?php
-							echo static::render_select_option(
-								'fetch_meditation_book',
-								$meditation_book,
-								array(
-									'jft'  => 'JFT',
-									'spad' => 'SPAD',
-								)
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_book',
+									$meditation_layout,
+									[
+										'jft' => 'JFT',
+										'spad' => 'SPAD',
+									]
+								),
+								[
+									'select' => [],
+									'option' => [],
+								]
 							);
 							?>
 						</td>
@@ -279,13 +285,19 @@ class FETCHMEDITATION {
 						<th scope="row">Layout</th>
 						<td>
 							<?php
-							echo static::render_select_option(
-								'fetch_meditation_layout',
-								$meditation_layout,
-								array(
-									'table' => 'Table',
-									'block' => 'Block (CSS)',
-								)
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_layout',
+									$meditation_layout,
+									[
+										'table' => 'Table',
+										'block' => 'Block (CSS)',
+									]
+								),
+								[
+									'select' => [],
+									'option' => [],
+								]
 							);
 							?>
 						</td>
@@ -294,20 +306,26 @@ class FETCHMEDITATION {
 						<th scope="row">Language</th>
 						<td>
 							<?php
-							echo static::render_select_option(
-								'fetch_meditation_language',
-								$meditation_language,
-								array(
-									'english'    => 'English',
-									'french'     => 'French',
-									'german'     => 'German',
-									'italian'    => 'Italian',
-									'japanese'   => 'Japanese',
-									'portuguese' => 'Portuguese',
-									'russian'    => 'Russian',
-									'spanish'    => 'Spanish',
-									'swedish'    => 'Swedish',
-								)
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_language',
+									$meditation_layout,
+									[
+										'english'    => 'English',
+										'french'     => 'French',
+										'german'     => 'German',
+										'italian'    => 'Italian',
+										'japanese'   => 'Japanese',
+										'portuguese' => 'Portuguese',
+										'russian'    => 'Russian',
+										'spanish'    => 'Spanish',
+										'swedish'    => 'Swedish',
+									]
+								),
+								[
+									'select' => [],
+									'option' => [],
+								]
 							);
 							?>
 						</td>
