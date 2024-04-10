@@ -231,8 +231,8 @@ class FETCHMEDITATION {
 	public static function create_menu(): void {
 		// Create the plugin's settings page in the WordPress admin menu
 		add_options_page(
-			esc_html__( 'Fetch Meditation Settings' ), // Page Title
-			esc_html__( 'Fetch Meditation' ),          // Menu Title
+			esc_html__( 'Fetch Meditation Settings', 'fetch-meditation-wp' ), // Page Title
+			esc_html__( 'Fetch Meditation', 'fetch-meditation-wp' ),          // Menu Title
 			'manage_options',                        // Capability
 			self::PLUG_SLUG,                         // Menu Slug
 			[ static::class, 'draw_settings' ]         // Callback function to display the page content
