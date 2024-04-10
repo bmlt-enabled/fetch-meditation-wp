@@ -253,6 +253,16 @@ class FETCHMEDITATION {
 		$meditation_book     = esc_attr( get_option( 'fetch_meditation_book' ) );
 		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout' ) );
 		$meditation_language = esc_attr( get_option( 'fetch_meditation_language' ) );
+		$allowed_html = [
+			'select' => [
+				'id'   => [],
+				'name' => [],
+			],
+			'option' => [
+				'value'   => [],
+				'selected'   => [],
+			],
+		];
 		?>
 		<div class="wrap">
 			<h2>Fetch Meditation Settings</h2>
@@ -267,16 +277,13 @@ class FETCHMEDITATION {
 							echo wp_kses(
 								static::render_select_option(
 									'fetch_meditation_book',
-									$meditation_layout,
+									$meditation_book,
 									[
 										'jft' => 'JFT',
 										'spad' => 'SPAD',
 									]
 								),
-								[
-									'select' => [],
-									'option' => [],
-								]
+								$allowed_html
 							);
 							?>
 						</td>
@@ -294,10 +301,7 @@ class FETCHMEDITATION {
 										'block' => 'Block (CSS)',
 									]
 								),
-								[
-									'select' => [],
-									'option' => [],
-								]
+								$allowed_html
 							);
 							?>
 						</td>
@@ -309,7 +313,7 @@ class FETCHMEDITATION {
 							echo wp_kses(
 								static::render_select_option(
 									'fetch_meditation_language',
-									$meditation_layout,
+									$meditation_language,
 									[
 										'english'    => 'English',
 										'french'     => 'French',
@@ -322,10 +326,7 @@ class FETCHMEDITATION {
 										'swedish'    => 'Swedish',
 									]
 								),
-								[
-									'select' => [],
-									'option' => [],
-								]
+								$allowed_html
 							);
 							?>
 						</td>
