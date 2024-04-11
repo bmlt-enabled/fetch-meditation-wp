@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name:   Fetch Meditation
- * Plugin URI:    https://wordpress.org/plugins/fetch-meditation-wp/
+ * Plugin URI:    https://wordpress.org/plugins/fetch-meditation/
  * Description:   Display a daily meditation on your site. To use this, specify [fetch_meditation] in your text code.
  * Install:       Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:  pjaudiomv, bmltenabled
  * Author:        bmlt-enabled
- * Version:       1.0.0
+ * Version:       1.0.1
  * Requires PHP:  8.1
  * License:       GPL v2 or later
  * License URI:   https://www.gnu.org/licenses/gpl-2.0.html
@@ -231,8 +231,8 @@ class FETCHMEDITATION {
 	public static function create_menu(): void {
 		// Create the plugin's settings page in the WordPress admin menu
 		add_options_page(
-			esc_html__( 'Fetch Meditation Settings', 'fetch-meditation-wp' ), // Page Title
-			esc_html__( 'Fetch Meditation', 'fetch-meditation-wp' ),          // Menu Title
+			esc_html__( 'Fetch Meditation Settings', 'fetch-meditation' ), // Page Title
+			esc_html__( 'Fetch Meditation', 'fetch-meditation' ),          // Menu Title
 			'manage_options',                        // Capability
 			self::PLUG_SLUG,                         // Menu Slug
 			[ static::class, 'draw_settings' ]         // Callback function to display the page content

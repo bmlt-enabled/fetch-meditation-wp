@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation-wp/
 Tags: na, fetch, meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.4.3
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,10 @@ MORE INFORMATION
 3. Add [fetch_meditation] shortcode to your WordPress page/post.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* Initial WordPress release.
 
 = 1.0.0 =
 
