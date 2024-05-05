@@ -35,6 +35,10 @@ MORE INFORMATION
 
 == Changelog ==
 
+= 1.0.2 =
+
+* Spanish language fix.
+
 = 1.0.1 =
 
 * Initial WordPress release.

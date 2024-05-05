@@ -6,7 +6,7 @@
  * Install:       Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:  pjaudiomv, bmltenabled
  * Author:        bmlt-enabled
- * Version:       1.0.1
+ * Version:       1.0.2
  * Requires PHP:  8.1
  * License:       GPL v2 or later
  * License URI:   https://www.gnu.org/licenses/gpl-2.0.html
