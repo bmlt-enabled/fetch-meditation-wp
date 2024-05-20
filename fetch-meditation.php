@@ -6,7 +6,7 @@
  * Install:       Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:  pjaudiomv, bmltenabled
  * Author:        bmlt-enabled
- * Version:       1.0.2
+ * Version:       1.0.3
  * Requires PHP:  8.1
  * License:       GPL v2 or later
  * License URI:   https://www.gnu.org/licenses/gpl-2.0.html
@@ -84,6 +84,12 @@ class FETCHMEDITATION {
 	 * @return string Sanitized and lowercased value of the determined option.
 	 */
 	private static function determine_option( string|array $attrs, string $option ): string {
+		if ( isset( $_POST['fetch_meditation_nonce'] ) && wp_verify_nonce( $_POST['fetch_meditation_nonce'], 'fetch_meditation_action' ) ) {
+			if ( isset( $_POST[ $option ] ) ) {
+				// Form data option
+				return sanitize_text_field( strtolower( $_POST[ $option ] ) );
+			}
+		}
 		if ( isset( $_GET[ $option ] ) ) {
 			// Query String Option
 			return sanitize_text_field( strtolower( $_GET[ $option ] ) );
@@ -267,6 +273,7 @@ class FETCHMEDITATION {
 		<div class="wrap">
 			<h2>Fetch Meditation Settings</h2>
 			<form method="post" action="options.php">
+				<?php wp_nonce_field( 'fetch_meditation_action', 'fetch_meditation_nonce' ); ?>
 				<?php settings_fields( self::SETTINGS_GROUP ); ?>
 				<?php do_settings_sections( self::SETTINGS_GROUP ); ?>
 				<table class="form-table">

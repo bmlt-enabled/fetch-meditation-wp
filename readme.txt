@@ -5,9 +5,11 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation-wp/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.4.3
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
+Fetch Meditation is a plugin that pulls either the Spiritual Principle A Day or Just For Today and puts it on your page or post.
 
 == Description ==
 
@@ -34,6 +36,10 @@ MORE INFORMATION
 3. Add [fetch_meditation] shortcode to your WordPress page/post.
 
 == Changelog ==
+
+= 1.0.3 =
+
+* Add nonce.
 
 = 1.0.2 =
 
