@@ -1,7 +1,7 @@
 === Fetch Meditation ===
 
 Contributors: bmltenabled, pjaudiomv
-Plugin URI: https://wordpress.org/plugins/fetch-meditation-wp/
+Plugin URI: https://wordpress.org/plugins/fetch-meditation/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.4.3
