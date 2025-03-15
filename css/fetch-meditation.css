@@ -50,7 +50,6 @@
 #meditation-container {
     margin:0 auto;
     font-size: medium;
-    font-family: 'times new roman', serif;
 }
 
 @media (min-width: 750px) and (max-width: 800px) {
@@ -59,14 +58,13 @@
     }
     .meditation-rendered-element body,
     .meditation-rendered-element table {
-        font-size: 13px;
-        font-family: 'times new roman';
+        font-size: small;
     }
     .meditation-rendered-element h1 {
-        font-size: 18px;
+        font-size: large;
     }
     .meditation-rendered-element h2 {
-        font-size: 16px;
+        font-size: medium;
     }
 }
 
@@ -76,13 +74,12 @@
     }
     .meditation-rendered-element body,
     .meditation-rendered-element table {
-        font-size: 9px;
-        font-family: 'times new roman';
+        font-size: small;
     }
     .meditation-rendered-element h1 {
-        font-size: 14px;
+        font-size: medium;
     }
     .meditation-rendered-element h2 {
-        font-size: 12px;
+        font-size: large;
     }
 }

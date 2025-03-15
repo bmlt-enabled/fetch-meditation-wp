@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -127,7 +127,11 @@ class FETCHMEDITATION {
 		$settings = ( 'spad' === $book ) ? new SPADSettings( $selected_language ) : new JFTSettings( $selected_language );
 		$instance = ( 'spad' === $book ) ? SPAD::getInstance( $settings ) : JFT::getInstance( $settings );
 		$entry    = $instance->fetch();
-		return static::build_layout( $entry, 'block' === $layout );
+		if ( is_string( $entry ) ) {
+			return "Error: {$entry}";
+		} else {
+			return static::build_layout( $entry, 'block' === $layout );
+		}
 	}
 
 	private static function build_layout( object $entry, bool $in_block ): string {
