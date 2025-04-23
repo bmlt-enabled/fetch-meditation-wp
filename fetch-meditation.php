@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.0.5
+ * Version:           1.1.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -99,6 +99,13 @@ class FETCHMEDITATION {
 			return sanitize_text_field( strtolower( $attrs[ $option ] ) );
 		} else {
 			// Settings Option or Default
+			if ( 'language' === $option ) {
+				// Determine which book is being used and get the corresponding language
+				$book = self::determine_option( $attrs, 'book' );
+				return sanitize_text_field( strtolower( get_option( 'fetch_meditation_' . $book . '_language' ) ) );
+			} elseif ( 'timezone' === $option ) {
+				return sanitize_text_field( get_option( 'fetch_meditation_timezone' ) );
+			}
 			return sanitize_text_field( strtolower( get_option( 'fetch_meditation_' . $option ) ) );
 		}
 	}
@@ -107,9 +114,14 @@ class FETCHMEDITATION {
 		$language = self::determine_option( $attrs, 'language' );
 		$book     = self::determine_option( $attrs, 'book' );
 		$layout   = self::determine_option( $attrs, 'layout' );
+		$timezone = self::determine_option( $attrs, 'timezone' );
 
 		$selected_language = ( 'spad' === $book )
-			? SPADLanguage::English
+			? match ( $language ) {
+				'english' => SPADLanguage::English,
+				'german' => SPADLanguage::German,
+				default => SPADLanguage::English
+			}
 			: match ( $language ) {
 				'english' => JFTLanguage::English,
 				'french' => JFTLanguage::French,
@@ -123,8 +135,16 @@ class FETCHMEDITATION {
 				default => JFTLanguage::English
 			};
 
-		// SPAD only supports english
-		$settings = ( 'spad' === $book ) ? new SPADSettings( $selected_language ) : new JFTSettings( $selected_language );
+		// Only apply timezone for English language
+		$use_timezone = 'english' === $language && ! empty( $timezone ) ? $timezone : null;
+
+		// Create settings with appropriate timezone
+		if ( 'spad' === $book ) {
+			$settings = new SPADSettings( $selected_language, $use_timezone );
+		} else {
+			$settings = new JFTSettings( $selected_language, $use_timezone );
+		}
+
 		$instance = ( 'spad' === $book ) ? SPAD::getInstance( $settings ) : JFT::getInstance( $settings );
 		$entry    = $instance->fetch();
 		if ( is_string( $entry ) ) {
@@ -206,16 +226,35 @@ class FETCHMEDITATION {
 
 	public function enqueue_frontend_files(): void {
 		wp_enqueue_style( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'css/fetch-meditation.css', false, '1.0.0', 'all' );
+		wp_enqueue_script( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'js/fetch-meditation.js', [], '1.0.0', true );
 	}
 
 	public static function register_settings(): void {
 		// Register plugin settings with WordPress
 		register_setting(
 			self::SETTINGS_GROUP,
-			'fetch_meditation_language',
+			'fetch_meditation_jft_language',
 			[
 				'type'              => 'string',
 				'default'           => self::DEFAULT_LANGUAGE,
+				'sanitize_callback' => 'sanitize_text_field',
+			]
+		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_spad_language',
+			[
+				'type'              => 'string',
+				'default'           => self::DEFAULT_LANGUAGE,
+				'sanitize_callback' => 'sanitize_text_field',
+			]
+		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_timezone',
+			[
+				'type'              => 'string',
+				'default'           => '',
 				'sanitize_callback' => 'sanitize_text_field',
 			]
 		);
@@ -263,7 +302,9 @@ class FETCHMEDITATION {
 		// Display the plugin's settings page
 		$meditation_book     = esc_attr( get_option( 'fetch_meditation_book' ) );
 		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout' ) );
-		$meditation_language = esc_attr( get_option( 'fetch_meditation_language' ) );
+		$jft_language       = esc_attr( get_option( 'fetch_meditation_jft_language' ) );
+		$spad_language      = esc_attr( get_option( 'fetch_meditation_spad_language' ) );
+		$timezone           = esc_attr( get_option( 'fetch_meditation_timezone' ) );
 		$allowed_html = [
 			'select' => [
 				'id'   => [],
@@ -318,14 +359,14 @@ class FETCHMEDITATION {
 							?>
 						</td>
 					</tr>
-					<tr valign="top" id="language-container">
-						<th scope="row">Language</th>
+					<tr valign="top" id="jft-language-container">
+						<th scope="row">JFT Language</th>
 						<td>
 							<?php
 							echo wp_kses(
 								static::render_select_option(
-									'fetch_meditation_language',
-									$meditation_language,
+									'fetch_meditation_jft_language',
+									$jft_language,
 									[
 										'english'    => 'English',
 										'french'     => 'French',
@@ -341,6 +382,55 @@ class FETCHMEDITATION {
 								$allowed_html
 							);
 							?>
+						</td>
+					</tr>
+					<tr valign="top" id="spad-language-container">
+						<th scope="row">SPAD Language</th>
+						<td>
+							<?php
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_spad_language',
+									$spad_language,
+									[
+										'english'    => 'English',
+										'german'     => 'German',
+									]
+								),
+								$allowed_html
+							);
+							?>
+						</td>
+					</tr>
+					<tr valign="top" id="timezone-container">
+						<th scope="row">Timezone (English Only)</th>
+						<td>
+							<?php
+							$timezone_options = [
+								'' => 'Server Default',
+								'America/New_York' => 'America/New_York',
+								'America/Chicago' => 'America/Chicago',
+								'America/Denver' => 'America/Denver',
+								'America/Los_Angeles' => 'America/Los_Angeles',
+								'America/Anchorage' => 'America/Anchorage',
+								'America/Honolulu' => 'America/Honolulu',
+								'America/Phoenix' => 'America/Phoenix',
+								'Europe/London' => 'Europe/London',
+								'Europe/Paris' => 'Europe/Paris',
+								'Europe/Berlin' => 'Europe/Berlin',
+								'Australia/Sydney' => 'Australia/Sydney',
+								'Asia/Tokyo' => 'Asia/Tokyo',
+							];
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_timezone',
+									$timezone,
+									$timezone_options
+								),
+								$allowed_html
+							);
+							?>
+							<p class="description">Only applies when English language is selected. Leave blank to use server default.</p>
 						</td>
 					</tr>
 				</table>
