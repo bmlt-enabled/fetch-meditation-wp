@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.1.1
+ * Version:           1.1.2
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -17,7 +17,7 @@ namespace FetchMeditationPlugin;
 
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
-if ( basename( $_SERVER['PHP_SELF'] ) == basename( __FILE__ ) ) {
+if ( isset( $_SERVER['PHP_SELF'] ) && basename( sanitize_text_field( wp_unslash( $_SERVER['PHP_SELF'] ) ) ) == basename( __FILE__ ) ) {
 	die( 'Sorry, but you cannot access this page directly.' );
 }
 
@@ -85,15 +85,17 @@ class FETCHMEDITATION {
 	 * @return string Sanitized and lowercased value of the determined option.
 	 */
 	private static function determine_option( string|array $attrs, string $option ): string {
-		if ( isset( $_POST['fetch_meditation_nonce'] ) && wp_verify_nonce( $_POST['fetch_meditation_nonce'], 'fetch_meditation_action' ) ) {
+		if ( isset( $_POST['fetch_meditation_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['fetch_meditation_nonce'] ) ), 'fetch_meditation_action' ) ) {
 			if ( isset( $_POST[ $option ] ) ) {
 				// Form data option
-				return sanitize_text_field( strtolower( $_POST[ $option ] ) );
+				$value = sanitize_text_field( wp_unslash( $_POST[ $option ] ) );
+				return sanitize_text_field( strtolower( $value ) );
 			}
 		}
 		if ( isset( $_GET[ $option ] ) ) {
 			// Query String Option
-			return sanitize_text_field( strtolower( $_GET[ $option ] ) );
+			$value = sanitize_text_field( wp_unslash( $_GET[ $option ] ) );
+			return sanitize_text_field( strtolower( $value ) );
 		} elseif ( ! empty( $attrs[ $option ] ) ) {
 			// Shortcode Option
 			return sanitize_text_field( strtolower( $attrs[ $option ] ) );
@@ -318,6 +320,33 @@ class FETCHMEDITATION {
 		?>
 		<div class="wrap">
 			<h2>Fetch Meditation Settings</h2>
+			
+			<div class="card" style="max-width: 800px; margin-bottom: 20px;">
+				<h3>How to Use</h3>
+				<p>Add the following shortcode to your page or post to display the meditation:</p>
+				<code>[fetch_meditation]</code>
+				
+				<h4>Available Options:</h4>
+				<ul>
+					<li><strong>Book:</strong> Choose between JFT or SPAD<br>
+					<code>[fetch_meditation book="jft"]</code> or <code>[fetch_meditation book="spad"]</code></li>
+					
+					<li><strong>Layout:</strong> Choose between table or block layout<br>
+					<code>[fetch_meditation layout="table"]</code> or <code>[fetch_meditation layout="block"]</code></li>
+					
+					<li><strong>Language:</strong><br>
+					<strong>JFT:</strong> english, french, german, italian, portuguese, russian, spanish, swedish<br>
+					<strong>SPAD:</strong> english, german<br>
+					<code>[fetch_meditation language="spanish"]</code></li>
+
+					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
+					<code>[fetch_meditation timezone="America/New_York"]</code><br>
+					Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
+				</ul>
+				
+				<p>You can combine options: <code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code></p>
+			</div>
+
 			<form method="post" action="options.php">
 				<?php wp_nonce_field( 'fetch_meditation_action', 'fetch_meditation_nonce' ); ?>
 				<?php settings_fields( self::SETTINGS_GROUP ); ?>
