@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.8
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,9 +37,16 @@ MORE INFORMATION
 
 == Changelog ==
 
+= 1.1.3 =
+
+* Moved Portuguese translation to NA Portugal
+* Fixed Russian translation.
+
+* Updated instruction.
+
 = 1.1.2 =
 
-* Uopdated instruction.
+* Updated instruction.
 
 = 1.1.1 =
 
