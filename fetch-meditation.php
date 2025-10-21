@@ -423,7 +423,7 @@ class FETCHMEDITATION {
 	public static function draw_settings(): void {
 		// Display the plugin's settings page
 		$meditation_book     = esc_attr( get_option( 'fetch_meditation_book' ) );
-		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout' ) );
+		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout', self::DEFAULT_LAYOUT ) );
 		$meditation_theme    = esc_attr( get_option( 'fetch_meditation_theme' ) );
 		$jft_language       = esc_attr( get_option( 'fetch_meditation_jft_language' ) );
 		$spad_language      = esc_attr( get_option( 'fetch_meditation_spad_language' ) );
