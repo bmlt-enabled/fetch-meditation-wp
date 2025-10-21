@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.1.4
+ * Version:           1.2.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -139,21 +139,73 @@ class FETCHMEDITATION {
 
 		// Only apply timezone for English language
 		$use_timezone = 'english' === $language && ! empty( $timezone ) ? $timezone : null;
-
-		// Create settings with appropriate timezone
 		if ( 'spad' === $book ) {
 			$settings = new SPADSettings( $selected_language, $use_timezone );
 		} else {
 			$settings = new JFTSettings( $selected_language, $use_timezone );
 		}
-
-		$instance = ( 'spad' === $book ) ? SPAD::getInstance( $settings ) : JFT::getInstance( $settings );
-		$entry    = $instance->fetch();
-		if ( is_string( $entry ) ) {
-			return "Error: {$entry}";
-		} else {
+		try {
+			$instance = ( 'spad' === $book ) ? SPAD::getInstance( $settings ) : JFT::getInstance( $settings );
+			$entry    = $instance->fetch();
+			if ( is_string( $entry ) ) {
+				return static::render_error_message( $entry, $book, $language );
+			}
 			return static::build_layout( $entry, 'block' === $layout );
+		} catch ( \Exception $e ) {
+			return static::render_error_message( $e->getMessage(), $book, $language );
+		} catch ( \Error $e ) {
+			return static::render_error_message( 'Service temporarily unavailable', $book, $language );
 		}
+	}
+
+	/**
+	 * Render a user-friendly error message with fallback content.
+	 *
+	 * @param string $error_message The error message from the library
+	 * @param string $book The book type (jft or spad)
+	 * @param string $language The selected language
+	 * @return string HTML formatted error message
+	 */
+	private static function render_error_message( string $error_message, string $book, string $language ): string {
+		$clean_error = esc_html( $error_message );
+		$user_message = static::get_user_friendly_message( $error_message, $book, $language );
+		$content = "\n<div class=\"meditation-error-container\" style=\"padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-left: 4px solid #ffba00; background-color: #fff8e1;\">\n";
+		$content .= "\t<p style=\"margin: 0 0 10px 0; font-weight: bold; color: #e65100;\">Meditation Content Unavailable</p>\n";
+		$content .= "\t<p style=\"margin: 0; color: #333;\">" . esc_html( $user_message ) . "</p>\n";
+		$content .= "\t<details style=\"margin-top: 10px;\">\n";
+		$content .= "\t\t<summary style=\"cursor: pointer; font-size: 0.9em; color: #666;\">Technical Details</summary>\n";
+		$content .= "\t\t<pre style=\"background: #f5f5f5; padding: 8px; margin-top: 5px; font-size: 0.8em; border-radius: 3px; overflow-x: auto;\">" . $clean_error . "</pre>\n";
+		$content .= "\t</details>\n";
+		$content .= "</div>\n";
+		return $content;
+	}
+
+	/**
+	 * Get a user-friendly error message based on the technical error.
+	 *
+	 * @param string $error_message The technical error message
+	 * @param string $book The book type
+	 * @param string $language The selected language
+	 * @return string User-friendly message
+	 */
+	private static function get_user_friendly_message( string $error_message, string $book, string $language ): string {
+		$lower_error = strtolower( $error_message );
+		if ( str_contains( $lower_error, 'network' ) || str_contains( $lower_error, 'connection' ) || str_contains( $lower_error, 'timeout' ) ) {
+			return 'Unable to connect to the meditation service. Please check your internet connection and try again later.';
+		}
+		if ( str_contains( $lower_error, 'curl' ) || str_contains( $lower_error, 'http' ) ) {
+			return 'The meditation service is temporarily unavailable. Please try again in a few minutes.';
+		}
+		if ( str_contains( $lower_error, 'parse' ) || str_contains( $lower_error, 'html' ) || str_contains( $lower_error, 'dom' ) ) {
+			return 'The meditation content format has changed. Please contact the site administrator.';
+		}
+		if ( str_contains( $lower_error, 'language' ) || str_contains( $lower_error, 'not supported' ) ) {
+			return sprintf( 'The selected language (%s) is not available for %s meditations. Please try a different language.', ucfirst( $language ), strtoupper( $book ) );
+		}
+		if ( str_contains( $lower_error, 'service temporarily unavailable' ) ) {
+			return 'The meditation service is temporarily down for maintenance. Please try again later.';
+		}
+		return sprintf( 'Unable to load today\'s %s meditation at this time. Please try refreshing the page or check back later.', strtoupper( $book ) );
 	}
 
 	private static function build_layout( object $entry, bool $in_block ): string {
