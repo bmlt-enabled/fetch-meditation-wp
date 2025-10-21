@@ -1,5 +1,6 @@
+/* SPAD theme for Fetch Meditation plugin - based on original SPAD plugin CSS */
 #meditation-date {
-    text-align: left;
+    text-align: center;
     font-size: x-large;
     margin-top: 1em;
 }
@@ -17,23 +18,24 @@
 }
 
 #meditation-quote {
-    text-align: center;
+    text-align: left;
     font-style: italic;
     font-size: large;
     margin-bottom: 1em;
 }
 
+#meditation-source,
 #meditation-quote-source {
     text-align: right;
     margin-bottom: 1em;
 }
 
 #meditation-thought {
-    font-style: italic;
-    margin-left:10%;
+    margin-left: 10%;
     margin-right: 10%;
     margin-bottom: 2em;
     padding-top: 1em;
+    border-top: 2px solid black;
 }
 
 #meditation-copyright {
@@ -49,8 +51,9 @@
 
 #meditation-container,
 #meditation-table-container {
-    margin:0 auto;
+    margin: 0 auto;
     font-size: medium;
+    font-family: 'times new roman', serif;
 }
 
 /* Error message styling */
@@ -115,13 +118,14 @@
     }
     .meditation-rendered-element body,
     .meditation-rendered-element table {
-        font-size: small;
+        font-size: 13px;
+        font-family: 'times new roman';
     }
     .meditation-rendered-element h1 {
-        font-size: large;
+        font-size: 18px;
     }
     .meditation-rendered-element h2 {
-        font-size: medium;
+        font-size: 16px;
     }
 
     .meditation-error-container {
@@ -137,13 +141,14 @@
     }
     .meditation-rendered-element body,
     .meditation-rendered-element table {
-        font-size: small;
+        font-size: 9px;
+        font-family: 'times new roman';
     }
     .meditation-rendered-element h1 {
-        font-size: medium;
+        font-size: 14px;
     }
     .meditation-rendered-element h2 {
-        font-size: large;
+        font-size: 12px;
     }
 
     .meditation-error-container {

@@ -1,55 +1,51 @@
+/* JFT theme for Fetch Meditation plugin - based on original JFT plugin CSS */
 #meditation-date {
-    text-align: left;
+    text-align: center;
     font-size: x-large;
-    margin-top: 1em;
 }
 
 #meditation-title {
     text-align: center;
-    font-weight: bold;
-    font-size: xx-large;
-    margin-bottom: .5em;
+    font-size: large;
+    font-style: italic;
 }
 
 #meditation-page {
-    text-align: center;
-    margin-bottom: 1em;
+    font-size: medium;
+    text-align: right;
 }
 
 #meditation-quote {
     text-align: center;
+    font-size: medium;
     font-style: italic;
-    font-size: large;
-    margin-bottom: 1em;
 }
 
-#meditation-quote-source {
-    text-align: right;
+#meditation-quote-source,
+#meditation-source {
+    text-align: center;
+    font-size: small;
+    font-style: italic;
     margin-bottom: 1em;
 }
 
 #meditation-thought {
+    margin-left: 20%;
+    margin-right: 20%;
     font-style: italic;
-    margin-left:10%;
-    margin-right: 10%;
     margin-bottom: 2em;
-    padding-top: 1em;
 }
 
 #meditation-copyright {
     font-style: italic;
     text-align: center;
-    font-size: small;
-    margin-bottom: 1em;
-}
-
-#meditation-divider {
-    visibility: hidden !important;
+    font-size: x-small;
+    margin-bottom: 2em;
 }
 
 #meditation-container,
 #meditation-table-container {
-    margin:0 auto;
+    margin: 0 auto;
     font-size: medium;
 }
 

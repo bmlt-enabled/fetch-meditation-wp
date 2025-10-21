@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.3.1
+ * Version:           1.4.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -39,7 +39,8 @@ class FETCHMEDITATION {
 	private const DEFAULT_LANGUAGE = 'English';
 	private const DEFAULT_BOOK     = 'JFT';
 
-	private const DEFAULT_LAYOUT = 'table';
+	private const DEFAULT_LAYOUT = 'block';
+	private const DEFAULT_THEME = 'default';
 
 	private const PLUG_SLUG = 'fetch-meditation';
 
@@ -83,7 +84,7 @@ class FETCHMEDITATION {
 	 * Determines the option value based on the provided attributes or fallbacks to a default value.
 	 *
 	 * @param string|array $attrs An string or associative array of attributes where the key is the option name.
-	 * @param string $option The specific option to fetch (e.g., 'language', 'book', 'layout').
+	 * @param string $option The specific option to fetch (e.g., 'language', 'book', 'layout', 'theme').
 	 * @return string Sanitized and lowercased value of the determined option.
 	 */
 	private static function determine_option( string|array $attrs, string $option ): string {
@@ -115,7 +116,7 @@ class FETCHMEDITATION {
 	}
 
 	/**
-	 * Render JFT shortcode with book defaulted to 'jft'
+	 * Render JFT shortcode with book defaulted to 'jft' and theme to 'jft-style'
 	 *
 	 * @param string|array $attrs Shortcode attributes
 	 * @return string Rendered shortcode content
@@ -123,11 +124,14 @@ class FETCHMEDITATION {
 	public static function render_jft_shortcode( string|array $attrs = [] ): string {
 		$attrs = is_array( $attrs ) ? $attrs : [];
 		$attrs['book'] = 'jft';
+		if ( empty( $attrs['theme'] ) ) {
+			$attrs['theme'] = 'jft-style';
+		}
 		return static::render_shortcode( $attrs );
 	}
 
 	/**
-	 * Render SPAD shortcode with book defaulted to 'spad'
+	 * Render SPAD shortcode with book defaulted to 'spad' and theme to 'spad-style'
 	 *
 	 * @param string|array $attrs Shortcode attributes
 	 * @return string Rendered shortcode content
@@ -135,6 +139,9 @@ class FETCHMEDITATION {
 	public static function render_spad_shortcode( string|array $attrs = [] ): string {
 		$attrs = is_array( $attrs ) ? $attrs : [];
 		$attrs['book'] = 'spad';
+		if ( empty( $attrs['theme'] ) ) {
+			$attrs['theme'] = 'spad-style';
+		}
 		return static::render_shortcode( $attrs );
 	}
 
@@ -143,6 +150,9 @@ class FETCHMEDITATION {
 		$book     = self::determine_option( $attrs, 'book' );
 		$layout   = self::determine_option( $attrs, 'layout' );
 		$timezone = self::determine_option( $attrs, 'timezone' );
+		$theme    = self::determine_option( $attrs, 'theme' );
+		// Enqueue the appropriate CSS file based on theme
+		self::enqueue_theme_css( $theme );
 
 		$selected_language = ( 'spad' === $book )
 			? match ( $language ) {
@@ -305,8 +315,31 @@ class FETCHMEDITATION {
 	}
 
 	public function enqueue_frontend_files(): void {
-		wp_enqueue_style( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'css/fetch-meditation.css', false, '1.0.0', 'all' );
-		wp_enqueue_script( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'js/fetch-meditation.js', [], '1.0.0', true );
+		// We can't determine the theme at enqueue time since shortcodes haven't been processed
+		// Instead, we'll enqueue CSS dynamically in the shortcode render methods
+	}
+
+	/**
+	 * Enqueue the appropriate CSS file based on theme
+	 *
+	 * @param string $theme The theme to use
+	 * @return void
+	 */
+	private static function enqueue_theme_css( string $theme ): void {
+		static $enqueued_theme = null;
+		if ( $theme === $enqueued_theme ) {
+			return;
+		}
+		if ( null !== $enqueued_theme ) {
+			wp_dequeue_style( self::PLUG_SLUG );
+		}
+		$enqueued_theme = $theme;
+		$css_file = match ( strtolower( $theme ) ) {
+			'jft-style' => 'fetch-meditation-jft.css',
+			'spad-style' => 'fetch-meditation-spad.css',
+			default => 'fetch-meditation.css',
+		};
+		wp_enqueue_style( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'css/' . $css_file, false, '1.0.0', 'all' );
 	}
 
 	public static function register_settings(): void {
@@ -356,6 +389,15 @@ class FETCHMEDITATION {
 				'sanitize_callback' => 'sanitize_text_field',
 			]
 		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_theme',
+			[
+				'type'              => 'string',
+				'default'           => self::DEFAULT_THEME,
+				'sanitize_callback' => 'sanitize_text_field',
+			]
+		);
 	}
 
 	public static function create_menu(): void {
@@ -382,6 +424,7 @@ class FETCHMEDITATION {
 		// Display the plugin's settings page
 		$meditation_book     = esc_attr( get_option( 'fetch_meditation_book' ) );
 		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout' ) );
+		$meditation_theme    = esc_attr( get_option( 'fetch_meditation_theme' ) );
 		$jft_language       = esc_attr( get_option( 'fetch_meditation_jft_language' ) );
 		$spad_language      = esc_attr( get_option( 'fetch_meditation_spad_language' ) );
 		$timezone           = esc_attr( get_option( 'fetch_meditation_timezone' ) );
@@ -416,6 +459,10 @@ class FETCHMEDITATION {
 					<li><strong>Layout:</strong> Choose between table or block layout<br>
 					<code>[jft layout="block"]</code> or <code>[spad layout="table"]</code></li>
 					
+					<li><strong>Theme:</strong> Choose visual appearance (default, jft-style, spad-style)<br>
+					<code>[fetch_meditation theme="jft-style"]</code> or <code>[jft theme="default"]</code><br>
+					Note: [jft] shortcode defaults to jft-style theme, [spad] shortcode defaults to spad-style theme</li>
+
 					<li><strong>Language:</strong><br>
 					<strong>JFT:</strong> english, french, german, italian, portuguese, russian, spanish, swedish<br>
 					<strong>SPAD:</strong> english, german<br>
@@ -428,10 +475,12 @@ class FETCHMEDITATION {
 				
 				<h4>Examples:</h4>
 				<ul>
-					<li><code>[jft]</code> - Simple JFT meditation</li>
-					<li><code>[spad language="german"]</code> - German SPAD meditation</li>
+					<li><code>[jft]</code> - Simple JFT meditation (uses JFT style theme by default)</li>
+					<li><code>[spad language="german"]</code> - German SPAD meditation (uses SPAD style theme by default)</li>
 					<li><code>[jft layout="block" language="spanish" timezone="Europe/Madrid"]</code> - Spanish JFT with block layout and Madrid timezone</li>
 					<li><code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code> - Using the general shortcode</li>
+					<li><code>[jft theme="default"]</code> - JFT meditation with default theme instead of JFT style</li>
+					<li><code>[fetch_meditation book="spad" theme="jft-style"]</code> - SPAD meditation with JFT style theme</li>
 				</ul>
 			</div>
 
@@ -467,13 +516,33 @@ class FETCHMEDITATION {
 									'fetch_meditation_layout',
 									$meditation_layout,
 									[
-										'table' => 'Table',
 										'block' => 'Block (CSS)',
+										'table' => 'Table',
 									]
 								),
 								$allowed_html
 							);
 							?>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row">Theme</th>
+						<td>
+							<?php
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_theme',
+									$meditation_theme,
+									[
+										'default' => 'Default',
+										'jft-style' => 'JFT Style',
+										'spad-style' => 'SPAD Style',
+									]
+								),
+								$allowed_html
+							);
+							?>
+							<p class="description">Choose the visual theme for the meditation display. Note: [jft] shortcode defaults to JFT Style, [spad] shortcode defaults to SPAD Style.</p>
 						</td>
 					</tr>
 					<tr valign="top" id="jft-language-container">
