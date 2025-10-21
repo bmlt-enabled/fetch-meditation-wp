@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.8
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,14 +15,18 @@ Fetch Meditation is a plugin that pulls either the Spiritual Principle A Day or 
 
 Fetch Meditation is a plugin that pulls either the Spiritual Principle A Day or Just For Today and puts it on your page or post.
 
-To use this, specify the shortcode [fetch_meditation] in your page or post.
+Use one of the following shortcodes in your page or post:
+- [fetch_meditation] - General shortcode (requires book attribute)
+- [jft] - Just For Today meditation
+- [spad] - Spiritual Principle A Day meditation
 
-SHORTCODE
-Basic: [fetch_meditation]
-Book: jft, spad [fetch_meditation book=&quot;jft&quot;]
-Layout: table, block [fetch_meditation layout=&quot;block&quot;]
-Language: JFT: english, french, german, italian, portuguese, russian, spanish, swedish. SPAD: english, german [fetch_meditation language=&quot;spanish&quot;]
-Tiemzone (English Only): Any valid IANA [timezone](https://www.php.net/manual/en/timezones.php)
+SHORTCODES
+Basic JFT: [jft]
+Basic SPAD: [spad]
+General: [fetch_meditation book="jft"]
+Layout: table, block [jft layout="block"] or [spad layout="table"]
+Language: JFT: english, french, german, italian, portuguese, russian, spanish, swedish. SPAD: english, german [jft language="spanish"] or [spad language="german"]
+Timezone (English Only): Any valid IANA [timezone](https://www.php.net/manual/en/timezones.php) [jft timezone="America/New_York"]
 
 MORE INFORMATION
 
@@ -33,9 +37,16 @@ MORE INFORMATION
 
 1. Upload `the fetch-meditation-wp` directory to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Add [fetch_meditation] shortcode to your WordPress page/post.
+3. Add [jft], [spad], or [fetch_meditation] shortcode to your WordPress page/post.
 
 == Changelog ==
+
+= 1.3.0 =
+
+* Added [jft] shortcode for Just For Today meditations.
+* Added [spad] shortcode for Spiritual Principle A Day meditations.
+* New shortcodes accept all existing attributes (language, layout, timezone) while defaulting to their respective book types.
+* Updated documentation with new shortcode examples.
 
 = 1.2.0 =
 

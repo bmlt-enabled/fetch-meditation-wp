@@ -2,11 +2,11 @@
 /**
  * Plugin Name:       Fetch Meditation
  * Plugin URI:        https://wordpress.org/plugins/fetch-meditation/
- * Description:       Display a daily meditation on your site. To use this, specify [fetch_meditation] in your text code.
- * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]" in the code section of a page or a post.
+ * Description:       Display a daily meditation on your site. Use [fetch_meditation], [jft], or [spad] shortcodes.
+ * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.2.0
+ * Version:           1.3.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -74,6 +74,8 @@ class FETCHMEDITATION {
 		} else {
 			add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_frontend_files' ] );
 			add_shortcode( 'fetch_meditation', [ static::class, 'render_shortcode' ] );
+			add_shortcode( 'jft', [ static::class, 'render_jft_shortcode' ] );
+			add_shortcode( 'spad', [ static::class, 'render_spad_shortcode' ] );
 		}
 	}
 
@@ -110,6 +112,30 @@ class FETCHMEDITATION {
 			}
 			return sanitize_text_field( strtolower( get_option( 'fetch_meditation_' . $option ) ) );
 		}
+	}
+
+	/**
+	 * Render JFT shortcode with book defaulted to 'jft'
+	 *
+	 * @param string|array $attrs Shortcode attributes
+	 * @return string Rendered shortcode content
+	 */
+	public static function render_jft_shortcode( string|array $attrs = [] ): string {
+		$attrs = is_array( $attrs ) ? $attrs : [];
+		$attrs['book'] = 'jft';
+		return static::render_shortcode( $attrs );
+	}
+
+	/**
+	 * Render SPAD shortcode with book defaulted to 'spad'
+	 *
+	 * @param string|array $attrs Shortcode attributes
+	 * @return string Rendered shortcode content
+	 */
+	public static function render_spad_shortcode( string|array $attrs = [] ): string {
+		$attrs = is_array( $attrs ) ? $attrs : [];
+		$attrs['book'] = 'spad';
+		return static::render_shortcode( $attrs );
 	}
 
 	public static function render_shortcode( string|array $attrs = [] ): string {
@@ -375,28 +401,38 @@ class FETCHMEDITATION {
 			
 			<div class="card" style="max-width: 800px; margin-bottom: 20px;">
 				<h3>How to Use</h3>
-				<p>Add the following shortcode to your page or post to display the meditation:</p>
-				<code>[fetch_meditation]</code>
+				<p>Add one of the following shortcodes to your page or post to display the meditation:</p>
+				<ul>
+					<li><code>[fetch_meditation]</code> - General shortcode (requires book attribute)</li>
+					<li><code>[jft]</code> - Displays Just For Today meditation</li>
+					<li><code>[spad]</code> - Displays Spiritual Principle A Day meditation</li>
+				</ul>
 				
 				<h4>Available Options:</h4>
 				<ul>
-					<li><strong>Book:</strong> Choose between JFT or SPAD<br>
+					<li><strong>Book:</strong> Choose between JFT or SPAD (not needed for [jft] and [spad] shortcodes)<br>
 					<code>[fetch_meditation book="jft"]</code> or <code>[fetch_meditation book="spad"]</code></li>
 					
 					<li><strong>Layout:</strong> Choose between table or block layout<br>
-					<code>[fetch_meditation layout="table"]</code> or <code>[fetch_meditation layout="block"]</code></li>
+					<code>[jft layout="block"]</code> or <code>[spad layout="table"]</code></li>
 					
 					<li><strong>Language:</strong><br>
 					<strong>JFT:</strong> english, french, german, italian, portuguese, russian, spanish, swedish<br>
 					<strong>SPAD:</strong> english, german<br>
-					<code>[fetch_meditation language="spanish"]</code></li>
+					<code>[jft language="spanish"]</code> or <code>[spad language="german"]</code></li>
 
 					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
-					<code>[fetch_meditation timezone="America/New_York"]</code><br>
+					<code>[jft timezone="America/New_York"]</code><br>
 					Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
 				</ul>
 				
-				<p>You can combine options: <code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code></p>
+				<h4>Examples:</h4>
+				<ul>
+					<li><code>[jft]</code> - Simple JFT meditation</li>
+					<li><code>[spad language="german"]</code> - German SPAD meditation</li>
+					<li><code>[jft layout="block" language="spanish" timezone="Europe/Madrid"]</code> - Spanish JFT with block layout and Madrid timezone</li>
+					<li><code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code> - Using the general shortcode</li>
+				</ul>
 			</div>
 
 			<form method="post" action="options.php">
