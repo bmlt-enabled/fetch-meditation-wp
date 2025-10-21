@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9def2a96f0b647967dcec5790ae56e06",
+    "content-hash": "f28f139c4bd912b1e82d4a8d37ac5a1b",
     "packages": [
         {
             "name": "bmlt/fetch-meditation",
-            "version": "1.2.6",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bmlt-enabled/fetch-meditation.git",
-                "reference": "ead5571af7da1b4d985eb3a803785674100e9779"
+                "reference": "bb5d7ed82fc714d361dcf9ee13903751257c3a54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bmlt-enabled/fetch-meditation/zipball/ead5571af7da1b4d985eb3a803785674100e9779",
-                "reference": "ead5571af7da1b4d985eb3a803785674100e9779",
+                "url": "https://api.github.com/repos/bmlt-enabled/fetch-meditation/zipball/bb5d7ed82fc714d361dcf9ee13903751257c3a54",
+                "reference": "bb5d7ed82fc714d361dcf9ee13903751257c3a54",
                 "shasum": ""
             },
             "require": {
@@ -55,9 +55,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bmlt-enabled/fetch-meditation/issues",
-                "source": "https://github.com/bmlt-enabled/fetch-meditation/tree/1.2.6"
+                "source": "https://github.com/bmlt-enabled/fetch-meditation/tree/1.3.0"
             },
-            "time": "2025-10-21T11:05:21+00:00"
+            "time": "2025-10-21T13:13:51+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -1081,10 +1081,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }

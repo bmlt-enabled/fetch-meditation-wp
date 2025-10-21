@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Authors:           bmltenabled
- * Version:           1.3.0
+ * Version:           1.3.1
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
