@@ -5,7 +5,7 @@
  * Description:       Display a daily meditation on your site. Use [fetch_meditation], [jft], or [spad] shortcodes.
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
- * Authors:           bmltenabled
+ * Author:            bmltenabled
  * Version:           1.4.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
