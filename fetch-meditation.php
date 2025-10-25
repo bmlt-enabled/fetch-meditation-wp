@@ -116,6 +116,120 @@ class FETCHMEDITATION {
 	}
 
 	/**
+	 * Get the appropriate language enum based on book type and language code
+	 *
+	 * @param string $book The book type (jft or spad)
+	 * @param string $language The language code
+	 * @return JFTLanguage|SPADLanguage The language enum
+	 */
+	private static function get_language_enum( string $book, string $language ): JFTLanguage|SPADLanguage {
+		if ( 'spad' === $book ) {
+			// Try to find matching SPAD language by name
+			foreach ( SPADLanguage::cases() as $case ) {
+				if ( strtolower( $case->name ) === $language ) {
+					return $case;
+				}
+			}
+			return SPADLanguage::English; // Default
+		} else {
+			// Convert language name to match enum case names
+			$normalized = self::normalize_language_name( $language );
+			// Try to find matching JFT language by name
+			foreach ( JFTLanguage::cases() as $case ) {
+				if ( $case->name === $normalized ) {
+					return $case;
+				}
+			}
+			return JFTLanguage::English; // Default
+		}
+	}
+
+	/**
+	 * Normalize language name to match enum case names
+	 *
+	 * @param string $language The language code (e.g., 'portuguese-pt')
+	 * @return string The normalized name (e.g., 'PortuguesePT')
+	 */
+	private static function normalize_language_name( string $language ): string {
+		// Special case mappings
+		$special_cases = [
+			'portuguese-pt' => 'PortuguesePT',
+		];
+
+		if ( isset( $special_cases[ $language ] ) ) {
+			return $special_cases[ $language ];
+		}
+
+		// Default: capitalize first letter
+		return ucfirst( $language );
+	}
+
+	/**
+	 * Get available languages for a book type
+	 *
+	 * @param string $book The book type (jft or spad)
+	 * @return array Associative array of language code => display name
+	 */
+	private static function get_available_languages( string $book ): array {
+		$languages = [];
+
+		if ( 'spad' === $book ) {
+			foreach ( SPADLanguage::cases() as $case ) {
+				$code = strtolower( $case->name );
+				$languages[ $code ] = ucfirst( $case->name );
+			}
+		} else {
+			foreach ( JFTLanguage::cases() as $case ) {
+				// Convert enum case name to user-friendly format
+				$code = self::enum_case_to_code( $case->name );
+				$display = self::enum_case_to_display( $case->name );
+				$languages[ $code ] = $display;
+			}
+		}
+
+		return $languages;
+	}
+
+	/**
+	 * Convert enum case name to language code
+	 *
+	 * @param string $case_name The enum case name (e.g., 'PortuguesePT')
+	 * @return string The language code (e.g., 'portuguese-pt')
+	 */
+	private static function enum_case_to_code( string $case_name ): string {
+		// Special case mappings
+		$special_cases = [
+			'PortuguesePT' => 'portuguese-pt',
+		];
+
+		if ( isset( $special_cases[ $case_name ] ) ) {
+			return $special_cases[ $case_name ];
+		}
+
+		return strtolower( $case_name );
+	}
+
+	/**
+	 * Convert enum case name to display name
+	 *
+	 * @param string $case_name The enum case name (e.g., 'PortuguesePT')
+	 * @return string The display name (e.g., 'Portuguese (PT)')
+	 */
+	private static function enum_case_to_display( string $case_name ): string {
+		// Special case mappings for display names
+		$special_cases = [
+			'PortuguesePT' => 'Portuguese (PT)',
+			'Portuguese'   => 'Portuguese (BR)',
+		];
+
+		if ( isset( $special_cases[ $case_name ] ) ) {
+			return $special_cases[ $case_name ];
+		}
+
+		return ucfirst( $case_name );
+	}
+
+	/**
 	 * Render JFT shortcode with book defaulted to 'jft' and theme to 'jft-style'
 	 *
 	 * @param string|array $attrs Shortcode attributes
@@ -154,24 +268,7 @@ class FETCHMEDITATION {
 		// Enqueue the appropriate CSS file based on theme
 		self::enqueue_theme_css( $theme );
 
-		$selected_language = ( 'spad' === $book )
-			? match ( $language ) {
-				'english' => SPADLanguage::English,
-				'german' => SPADLanguage::German,
-				default => SPADLanguage::English
-			}
-			: match ( $language ) {
-				'english' => JFTLanguage::English,
-				'french' => JFTLanguage::French,
-				'german' => JFTLanguage::German,
-				'italian' => JFTLanguage::Italian,
-				'japanese' => JFTLanguage::Japanese,
-				'portuguese' => JFTLanguage::Portuguese,
-				'russian' => JFTLanguage::Russian,
-				'spanish' => JFTLanguage::Spanish,
-				'swedish' => JFTLanguage::Swedish,
-				default => JFTLanguage::English
-			};
+		$selected_language = self::get_language_enum( $book, $language );
 
 		// Only apply timezone for English language
 		$use_timezone = 'english' === $language && ! empty( $timezone ) ? $timezone : null;
@@ -464,8 +561,8 @@ class FETCHMEDITATION {
 					Note: [jft] shortcode defaults to jft-style theme, [spad] shortcode defaults to spad-style theme</li>
 
 					<li><strong>Language:</strong><br>
-					<strong>JFT:</strong> english, french, german, italian, portuguese, russian, spanish, swedish<br>
-					<strong>SPAD:</strong> english, german<br>
+					<strong>JFT:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'jft' ) ) ) ); ?><br>
+					<strong>SPAD:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'spad' ) ) ) ); ?><br>
 					<code>[jft language="spanish"]</code> or <code>[spad language="german"]</code></li>
 
 					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
@@ -553,17 +650,7 @@ class FETCHMEDITATION {
 								static::render_select_option(
 									'fetch_meditation_jft_language',
 									$jft_language,
-									[
-										'english'    => 'English',
-										'french'     => 'French',
-										'german'     => 'German',
-										'italian'    => 'Italian',
-										'japanese'   => 'Japanese',
-										'portuguese' => 'Portuguese',
-										'russian'    => 'Russian',
-										'spanish'    => 'Spanish',
-										'swedish'    => 'Swedish',
-									]
+									static::get_available_languages( 'jft' )
 								),
 								$allowed_html
 							);
@@ -578,10 +665,7 @@ class FETCHMEDITATION {
 								static::render_select_option(
 									'fetch_meditation_spad_language',
 									$spad_language,
-									[
-										'english'    => 'English',
-										'german'     => 'German',
-									]
+									static::get_available_languages( 'spad' )
 								),
 								$allowed_html
 							);
