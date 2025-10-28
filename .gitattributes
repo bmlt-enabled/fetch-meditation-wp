@@ -7,3 +7,4 @@ docker-compose.yml export-ignore
 Dockerfile export-ignore
 Makefile export-ignore
 /.github export-ignore
+/assets export-ignore
