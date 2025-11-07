@@ -6,12 +6,12 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - name: Check out code 🛒
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP 🐫
         uses: shivammathur/setup-php@v2
@@ -23,7 +23,7 @@ jobs:
         run: make lint
 
   package:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       BUILD_DIR: "build"
       DIST_DIR_GITHUB: "dist/github"
@@ -35,7 +35,7 @@ jobs:
       contents: write
     steps:
       - name: Check out code 🛒
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build package 🔧
         id: build-package
@@ -60,7 +60,7 @@ jobs:
           echo "RELEASE_TYPE=${RELEASE_TYPE}" >> $GITHUB_ENV
 
       - name: Create Release 🎉
-        uses: ncipollo/release-action@v1.14.0
+        uses: ncipollo/release-action@v1.20.0
         if: github.ref_type == 'tag'
         with:
           artifacts: ${{ env.ARTIFACT_PATH }}
