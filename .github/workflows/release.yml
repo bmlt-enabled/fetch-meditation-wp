@@ -11,7 +11,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - name: Check out code 🛒
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup PHP 🐫
         uses: shivammathur/setup-php@v2
@@ -35,7 +35,7 @@ jobs:
       contents: write
     steps:
       - name: Check out code 🛒
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Build package 🔧
         id: build-package
@@ -53,14 +53,14 @@ jobs:
       - name: Generate Release Notes 📝
         if: github.ref_type == 'tag'
         run: |
-          curl -LO https://raw.githubusercontent.com/bmlt-enabled/release-notes-tool/master/gh-release-notes.sh
+          curl -LO https://raw.githubusercontent.com/bmlt-enabled/release-notes-tool/main/gh-release-notes.sh
           chmod +x gh-release-notes.sh
           ./gh-release-notes.sh readme.txt "wp"
           RELEASE_TYPE=$(if [[ "$GITHUB_REF_NAME" =~ "beta" ]]; then echo "true"; else echo "false"; fi)
           echo "RELEASE_TYPE=${RELEASE_TYPE}" >> $GITHUB_ENV
 
       - name: Create Release 🎉
-        uses: ncipollo/release-action@v1.20.0
+        uses: ncipollo/release-action@v1
         if: github.ref_type == 'tag'
         with:
           artifacts: ${{ env.ARTIFACT_PATH }}
