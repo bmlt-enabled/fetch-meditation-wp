@@ -34,9 +34,7 @@ TABBED DISPLAY (book="both" only)
 Display both JFT and SPAD meditations in an interactive interface:
 - Basic (horizontal tabs): [fetch_meditation book="both"]
 - Accordion layout: [fetch_meditation book="both" tabs_layout="accordion"]
-- Different languages: [fetch_meditation book="both" jft_language="spanish" spad_language="german"]
-- Different timezones: [fetch_meditation book="both" jft_timezone="America/New_York" spad_timezone="America/Chicago"]
-- Different themes: [fetch_meditation book="both" jft_theme="jft-style" spad_theme="spad-style"]
+- Tabs layout (default): [fetch_meditation book="both" tabs_layout="tabs"]
 
 MORE INFORMATION
 
