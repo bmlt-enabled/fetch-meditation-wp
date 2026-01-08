@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.4.5
+ * Version:           1.4.6
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -728,57 +728,6 @@ class FETCHMEDITATION {
 		?>
 		<div class="wrap">
 			<h2>Fetch Meditation Settings</h2>
-			
-			<div class="card" style="max-width: 800px; margin-bottom: 20px;">
-				<h3>How to Use</h3>
-				<p>Add one of the following shortcodes to your page or post to display the meditation:</p>
-				<ul>
-					<li><code>[fetch_meditation]</code> - General shortcode (requires book attribute)</li>
-					<li><code>[jft]</code> - Displays Just For Today meditation</li>
-					<li><code>[spad]</code> - Displays Spiritual Principle A Day meditation</li>
-				</ul>
-				
-				<h4>Available Options:</h4>
-				<ul>
-					<li><strong>Book:</strong> Choose between JFT, SPAD, or Both (not needed for [jft] and [spad] shortcodes)<br>
-					<code>[fetch_meditation book="jft"]</code>, <code>[fetch_meditation book="spad"]</code>, or <code>[fetch_meditation book="both"]</code></li>
-					
-					<li><strong>Layout:</strong> Choose between table or block layout<br>
-					<code>[jft layout="block"]</code> or <code>[spad layout="table"]</code></li>
-					
-					<li><strong>Theme:</strong> Choose visual appearance (default, jft-style, spad-style)<br>
-					<code>[fetch_meditation theme="jft-style"]</code> or <code>[jft theme="default"]</code><br>
-					Note: [jft] shortcode defaults to jft-style theme, [spad] shortcode defaults to spad-style theme</li>
-
-					<li><strong>Language:</strong><br>
-					<strong>JFT:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'jft' ) ) ) ); ?><br>
-					<strong>SPAD:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'spad' ) ) ) ); ?><br>
-					<code>[jft language="spanish"]</code> or <code>[spad language="german"]</code></li>
-
-					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
-					<code>[jft timezone="America/New_York"]</code><br>
-					Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
-					
-					<li><strong>Tabbed Display (book="both" only):</strong><br>
-					<code>tabs_layout="tabs"</code> or <code>tabs_layout="accordion"</code> - Controls display style (default: tabs)<br>
-					<code>jft_language="english"</code>, <code>spad_language="german"</code> - Set different languages for each book<br>
-					<code>jft_timezone="America/New_York"</code>, <code>spad_timezone="America/Chicago"</code> - Set different timezones<br>
-					<code>jft_theme="jft-style"</code>, <code>spad_theme="spad-style"</code> - Set different themes for each book</li>
-				</ul>
-				
-				<h4>Examples:</h4>
-				<ul>
-					<li><code>[jft]</code> - Simple JFT meditation (uses JFT style theme by default)</li>
-					<li><code>[spad language="german"]</code> - German SPAD meditation (uses SPAD style theme by default)</li>
-					<li><code>[jft layout="block" language="spanish" timezone="Europe/Madrid"]</code> - Spanish JFT with block layout and Madrid timezone</li>
-					<li><code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code> - Using the general shortcode</li>
-					<li><code>[jft theme="default"]</code> - JFT meditation with default theme instead of JFT style</li>
-					<li><code>[fetch_meditation book="spad" theme="jft-style"]</code> - SPAD meditation with JFT style theme</li>
-					<li><code>[fetch_meditation book="both"]</code> - Display both JFT and SPAD in tabbed interface</li>
-					<li><code>[fetch_meditation book="both" tabs_layout="accordion"]</code> - Accordion layout (stacked)</li>
-					<li><code>[fetch_meditation book="both" jft_language="spanish" spad_language="german"]</code> - Different languages for each book</li>
-				</ul>
-			</div>
 
 			<form method="post" action="options.php">
 				<?php wp_nonce_field( 'fetch_meditation_action', 'fetch_meditation_nonce' ); ?>
@@ -925,6 +874,56 @@ class FETCHMEDITATION {
 				</table>
 				<?php submit_button(); ?>
 			</form>
+			<div class="card" style="max-width: 800px; margin-bottom: 20px;">
+				<h3>How to Use</h3>
+				<p>Add one of the following shortcodes to your page or post to display the meditation:</p>
+				<ul>
+					<li><code>[fetch_meditation]</code> - General shortcode (requires book attribute)</li>
+					<li><code>[jft]</code> - Displays Just For Today meditation</li>
+					<li><code>[spad]</code> - Displays Spiritual Principle A Day meditation</li>
+				</ul>
+
+				<h4>Available Options:</h4>
+				<ul>
+					<li><strong>Book:</strong> Choose between JFT, SPAD, or Both (not needed for [jft] and [spad] shortcodes)<br>
+						<code>[fetch_meditation book="jft"]</code>, <code>[fetch_meditation book="spad"]</code>, or <code>[fetch_meditation book="both"]</code></li>
+
+					<li><strong>Layout:</strong> Choose between table or block layout<br>
+						<code>[jft layout="block"]</code> or <code>[spad layout="table"]</code></li>
+
+					<li><strong>Theme:</strong> Choose visual appearance (default, jft-style, spad-style)<br>
+						<code>[fetch_meditation theme="jft-style"]</code> or <code>[jft theme="default"]</code><br>
+						Note: [jft] shortcode defaults to jft-style theme, [spad] shortcode defaults to spad-style theme</li>
+
+					<li><strong>Language:</strong><br>
+						<strong>JFT:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'jft' ) ) ) ); ?><br>
+						<strong>SPAD:</strong> <?php echo esc_html( implode( ', ', array_keys( static::get_available_languages( 'spad' ) ) ) ); ?><br>
+						<code>[jft language="spanish"]</code> or <code>[spad language="german"]</code></li>
+
+					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
+						<code>[jft timezone="America/New_York"]</code><br>
+						Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
+
+					<li><strong>Tabbed Display (book="both" only):</strong><br>
+						<code>tabs_layout="tabs"</code> or <code>tabs_layout="accordion"</code> - Controls display style (default: tabs)<br>
+						<code>jft_language="english"</code>, <code>spad_language="german"</code> - Set different languages for each book<br>
+						<code>jft_timezone="America/New_York"</code>, <code>spad_timezone="America/Chicago"</code> - Set different timezones<br>
+						<code>jft_theme="jft-style"</code>, <code>spad_theme="spad-style"</code> - Set different themes for each book</li>
+				</ul>
+
+				<h4>Examples:</h4>
+				<ul>
+					<li><code>[jft]</code> - Simple JFT meditation (uses JFT style theme by default)</li>
+					<li><code>[spad language="german"]</code> - German SPAD meditation (uses SPAD style theme by default)</li>
+					<li><code>[jft layout="block" language="spanish" timezone="Europe/Madrid"]</code> - Spanish JFT with block layout and Madrid timezone</li>
+					<li><code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code> - Using the general shortcode</li>
+					<li><code>[jft theme="default"]</code> - JFT meditation with default theme instead of JFT style</li>
+					<li><code>[fetch_meditation book="spad" theme="jft-style"]</code> - SPAD meditation with JFT style theme</li>
+					<li><code>[fetch_meditation book="both"]</code> - Display both JFT and SPAD in tabbed interface</li>
+					<li><code>[fetch_meditation book="both" tabs_layout="accordion"]</code> - Accordion layout (stacked)</li>
+					<li><code>[fetch_meditation book="both" jft_language="spanish" spad_language="german"]</code> - Different languages for each book</li>
+				</ul>
+			</div>
 		</div>
 		<?php
 	}
