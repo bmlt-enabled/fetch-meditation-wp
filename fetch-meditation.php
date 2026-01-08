@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.4.4
+ * Version:           1.4.5
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -41,6 +41,7 @@ class FETCHMEDITATION {
 
 	private const DEFAULT_LAYOUT = 'block';
 	private const DEFAULT_THEME = 'default';
+	private const DEFAULT_TABS_LAYOUT = 'tabs';
 
 	private const PLUG_SLUG = 'fetch-meditation';
 
@@ -260,8 +261,14 @@ class FETCHMEDITATION {
 	}
 
 	public static function render_shortcode( string|array $attrs = [] ): string {
+		$book = self::determine_option( $attrs, 'book' );
+
+		// Handle 'both' option - render tabbed interface
+		if ( 'both' === $book ) {
+			return static::render_both_shortcode( $attrs );
+		}
+
 		$language = self::determine_option( $attrs, 'language' );
-		$book     = self::determine_option( $attrs, 'book' );
 		$layout   = self::determine_option( $attrs, 'layout' );
 		$timezone = self::determine_option( $attrs, 'timezone' );
 		$theme    = self::determine_option( $attrs, 'theme' );
@@ -339,6 +346,144 @@ class FETCHMEDITATION {
 			return 'The meditation service is temporarily down for maintenance. Please try again later.';
 		}
 		return sprintf( 'Unable to load today\'s %s meditation at this time. Please try refreshing the page or check back later.', strtoupper( $book ) );
+	}
+
+	/**
+	 * Render both JFT and SPAD meditations in a tabbed interface
+	 *
+	 * @param string|array $attrs Shortcode attributes
+	 * @return string Rendered tabbed content
+	 */
+	private static function render_both_shortcode( string|array $attrs = [] ): string {
+		static $instance_counter = 0;
+		$instance_counter++;
+
+		$layout = self::determine_option( $attrs, 'layout' );
+		$tabs_layout = self::determine_option( $attrs, 'tabs_layout' );
+
+		// Determine languages for each book
+		$jft_language = isset( $attrs['jft_language'] ) ? sanitize_text_field( strtolower( $attrs['jft_language'] ) ) : self::determine_option( $attrs, 'language' );
+		$spad_language = isset( $attrs['spad_language'] ) ? sanitize_text_field( strtolower( $attrs['spad_language'] ) ) : self::determine_option( $attrs, 'language' );
+
+		// Determine timezones for each book
+		$jft_timezone = isset( $attrs['jft_timezone'] ) ? sanitize_text_field( $attrs['jft_timezone'] ) : self::determine_option( $attrs, 'timezone' );
+		$spad_timezone = isset( $attrs['spad_timezone'] ) ? sanitize_text_field( $attrs['spad_timezone'] ) : self::determine_option( $attrs, 'timezone' );
+
+		// Determine themes for each book
+		$jft_theme = isset( $attrs['jft_theme'] ) ? sanitize_text_field( strtolower( $attrs['jft_theme'] ) ) : 'jft-style';
+		$spad_theme = isset( $attrs['spad_theme'] ) ? sanitize_text_field( strtolower( $attrs['spad_theme'] ) ) : 'spad-style';
+
+		// Enqueue tabs CSS and JavaScript
+		self::enqueue_tabs_assets();
+
+		// Fetch JFT meditation
+		$jft_selected_language = self::get_language_enum( 'jft', $jft_language );
+		$jft_use_timezone = 'english' === $jft_language && ! empty( $jft_timezone ) ? $jft_timezone : null;
+		$jft_settings = new JFTSettings( $jft_selected_language, $jft_use_timezone );
+		$jft_content = '';
+		try {
+			$jft_instance = JFT::getInstance( $jft_settings );
+			$jft_entry = $jft_instance->fetch();
+			if ( is_string( $jft_entry ) ) {
+				$jft_content = static::render_error_message( $jft_entry, 'jft', $jft_language );
+			} else {
+				$jft_content = static::build_layout( $jft_entry, 'block' === $layout );
+			}
+		} catch ( \Exception $e ) {
+			$jft_content = static::render_error_message( $e->getMessage(), 'jft', $jft_language );
+		} catch ( \Error $e ) {
+			$jft_content = static::render_error_message( 'Service temporarily unavailable', 'jft', $jft_language );
+		}
+
+		// Fetch SPAD meditation
+		$spad_selected_language = self::get_language_enum( 'spad', $spad_language );
+		$spad_use_timezone = 'english' === $spad_language && ! empty( $spad_timezone ) ? $spad_timezone : null;
+		$spad_settings = new SPADSettings( $spad_selected_language, $spad_use_timezone );
+		$spad_content = '';
+		try {
+			$spad_instance = SPAD::getInstance( $spad_settings );
+			$spad_entry = $spad_instance->fetch();
+			if ( is_string( $spad_entry ) ) {
+				$spad_content = static::render_error_message( $spad_entry, 'spad', $spad_language );
+			} else {
+				$spad_content = static::build_layout( $spad_entry, 'block' === $layout );
+			}
+		} catch ( \Exception $e ) {
+			$spad_content = static::render_error_message( $e->getMessage(), 'spad', $spad_language );
+		} catch ( \Error $e ) {
+			$spad_content = static::render_error_message( 'Service temporarily unavailable', 'spad', $spad_language );
+		}
+
+		// Build tabbed or accordion interface
+		if ( 'accordion' === $tabs_layout ) {
+			return static::render_accordion( $instance_counter, $jft_content, $spad_content, $jft_theme, $spad_theme );
+		}
+
+		// Build tabbed interface (horizontal)
+		$content = "\n<div class=\"meditation-tabs-container\" data-instance-id=\"{$instance_counter}\" data-layout=\"tabs\">\n";
+		$content .= "  <ul class=\"meditation-tab-list\" role=\"tablist\">\n";
+		$content .= "    <li role=\"presentation\">\n";
+		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"jft\" aria-selected=\"true\" aria-controls=\"meditation-panel-jft-{$instance_counter}\" tabindex=\"0\">Just For Today</button>\n";
+		$content .= "    </li>\n";
+		$content .= "    <li role=\"presentation\">\n";
+		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"spad\" aria-selected=\"false\" aria-controls=\"meditation-panel-spad-{$instance_counter}\" tabindex=\"-1\">Spiritual Principle A Day</button>\n";
+		$content .= "    </li>\n";
+		$content .= "  </ul>\n";
+		$content .= "  <div class=\"meditation-tab-content\">\n";
+		$content .= "    <div class=\"meditation-tab-panel\" role=\"tabpanel\" id=\"meditation-panel-jft-{$instance_counter}\" data-tab-id=\"jft\" aria-labelledby=\"tab-jft\">\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme ) . "</style>\n";
+		$content .= $jft_content;
+		$content .= "    </div>\n";
+		$content .= "    <div class=\"meditation-tab-panel\" role=\"tabpanel\" id=\"meditation-panel-spad-{$instance_counter}\" data-tab-id=\"spad\" aria-labelledby=\"tab-spad\" hidden>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme ) . "</style>\n";
+		$content .= $spad_content;
+		$content .= "    </div>\n";
+		$content .= "  </div>\n";
+		$content .= "</div>\n";
+
+		return $content;
+	}
+
+	/**
+	 * Render accordion layout for both books
+	 *
+	 * @param int $instance_counter Unique instance ID
+	 * @param string $jft_content JFT meditation content
+	 * @param string $spad_content SPAD meditation content
+	 * @param string $jft_theme JFT theme
+	 * @param string $spad_theme SPAD theme
+	 * @return string Rendered accordion HTML
+	 */
+	private static function render_accordion( int $instance_counter, string $jft_content, string $spad_content, string $jft_theme, string $spad_theme ): string {
+		$content = "\n<div class=\"meditation-accordion-container\" data-instance-id=\"{$instance_counter}\" data-layout=\"accordion\">\n";
+
+		// JFT Accordion Item
+		$content .= "  <div class=\"meditation-accordion-item\">\n";
+		$content .= "    <button class=\"meditation-accordion-button active\" aria-expanded=\"true\" aria-controls=\"meditation-accordion-jft-{$instance_counter}\">\n";
+		$content .= "      <span>Just For Today</span>\n";
+		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
+		$content .= "    </button>\n";
+		$content .= "    <div class=\"meditation-accordion-panel active\" id=\"meditation-accordion-jft-{$instance_counter}\">\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme ) . "</style>\n";
+		$content .= $jft_content;
+		$content .= "    </div>\n";
+		$content .= "  </div>\n";
+
+		// SPAD Accordion Item
+		$content .= "  <div class=\"meditation-accordion-item\">\n";
+		$content .= "    <button class=\"meditation-accordion-button\" aria-expanded=\"false\" aria-controls=\"meditation-accordion-spad-{$instance_counter}\">\n";
+		$content .= "      <span>Spiritual Principle A Day</span>\n";
+		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
+		$content .= "    </button>\n";
+		$content .= "    <div class=\"meditation-accordion-panel\" id=\"meditation-accordion-spad-{$instance_counter}\" hidden>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme ) . "</style>\n";
+		$content .= $spad_content;
+		$content .= "    </div>\n";
+		$content .= "  </div>\n";
+
+		$content .= "</div>\n";
+
+		return $content;
 	}
 
 	private static function build_layout( object $entry, bool $in_block ): string {
@@ -439,6 +584,41 @@ class FETCHMEDITATION {
 		wp_enqueue_style( self::PLUG_SLUG, plugin_dir_url( __FILE__ ) . 'css/' . $css_file, false, '1.0.0', 'all' );
 	}
 
+	/**
+	 * Enqueue tabs CSS and JavaScript
+	 *
+	 * @return void
+	 */
+	private static function enqueue_tabs_assets(): void {
+		static $enqueued = false;
+		if ( $enqueued ) {
+			return;
+		}
+		$enqueued = true;
+		$base_url = plugin_dir_url( __FILE__ );
+		wp_enqueue_style( self::PLUG_SLUG . '-tabs', $base_url . 'css/fetch-meditation-tabs.css', [], filemtime( plugin_dir_path( __FILE__ ) . 'css/fetch-meditation-tabs.css' ), 'all' );
+		wp_enqueue_script( self::PLUG_SLUG . '-tabs', $base_url . 'js/fetch-meditation-tabs.js', [], filemtime( plugin_dir_path( __FILE__ ) . 'js/fetch-meditation-tabs.js' ), true );
+	}
+
+	/**
+	 * Get inline CSS content for a theme
+	 *
+	 * @param string $theme The theme name
+	 * @return string CSS content
+	 */
+	private static function get_inline_theme_css( string $theme ): string {
+		$css_file = match ( strtolower( $theme ) ) {
+			'jft-style' => 'fetch-meditation-jft.css',
+			'spad-style' => 'fetch-meditation-spad.css',
+			default => 'fetch-meditation.css',
+		};
+		$css_path = plugin_dir_path( __FILE__ ) . 'css/' . $css_file;
+		if ( file_exists( $css_path ) ) {
+			return wp_strip_all_tags( file_get_contents( $css_path ) );
+		}
+		return '';
+	}
+
 	public static function register_settings(): void {
 		// Register plugin settings with WordPress
 		register_setting(
@@ -495,6 +675,15 @@ class FETCHMEDITATION {
 				'sanitize_callback' => 'sanitize_text_field',
 			]
 		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_tabs_layout',
+			[
+				'type'              => 'string',
+				'default'           => self::DEFAULT_TABS_LAYOUT,
+				'sanitize_callback' => 'sanitize_text_field',
+			]
+		);
 	}
 
 	public static function create_menu(): void {
@@ -522,6 +711,7 @@ class FETCHMEDITATION {
 		$meditation_book     = esc_attr( get_option( 'fetch_meditation_book' ) );
 		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout', self::DEFAULT_LAYOUT ) );
 		$meditation_theme    = esc_attr( get_option( 'fetch_meditation_theme' ) );
+		$tabs_layout        = esc_attr( get_option( 'fetch_meditation_tabs_layout', self::DEFAULT_TABS_LAYOUT ) );
 		$jft_language       = esc_attr( get_option( 'fetch_meditation_jft_language' ) );
 		$spad_language      = esc_attr( get_option( 'fetch_meditation_spad_language' ) );
 		$timezone           = esc_attr( get_option( 'fetch_meditation_timezone' ) );
@@ -550,8 +740,8 @@ class FETCHMEDITATION {
 				
 				<h4>Available Options:</h4>
 				<ul>
-					<li><strong>Book:</strong> Choose between JFT or SPAD (not needed for [jft] and [spad] shortcodes)<br>
-					<code>[fetch_meditation book="jft"]</code> or <code>[fetch_meditation book="spad"]</code></li>
+					<li><strong>Book:</strong> Choose between JFT, SPAD, or Both (not needed for [jft] and [spad] shortcodes)<br>
+					<code>[fetch_meditation book="jft"]</code>, <code>[fetch_meditation book="spad"]</code>, or <code>[fetch_meditation book="both"]</code></li>
 					
 					<li><strong>Layout:</strong> Choose between table or block layout<br>
 					<code>[jft layout="block"]</code> or <code>[spad layout="table"]</code></li>
@@ -568,6 +758,12 @@ class FETCHMEDITATION {
 					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
 					<code>[jft timezone="America/New_York"]</code><br>
 					Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
+					
+					<li><strong>Tabbed Display (book="both" only):</strong><br>
+					<code>tabs_layout="tabs"</code> or <code>tabs_layout="accordion"</code> - Controls display style (default: tabs)<br>
+					<code>jft_language="english"</code>, <code>spad_language="german"</code> - Set different languages for each book<br>
+					<code>jft_timezone="America/New_York"</code>, <code>spad_timezone="America/Chicago"</code> - Set different timezones<br>
+					<code>jft_theme="jft-style"</code>, <code>spad_theme="spad-style"</code> - Set different themes for each book</li>
 				</ul>
 				
 				<h4>Examples:</h4>
@@ -578,6 +774,9 @@ class FETCHMEDITATION {
 					<li><code>[fetch_meditation book="jft" layout="block" language="english" timezone="America/New_York"]</code> - Using the general shortcode</li>
 					<li><code>[jft theme="default"]</code> - JFT meditation with default theme instead of JFT style</li>
 					<li><code>[fetch_meditation book="spad" theme="jft-style"]</code> - SPAD meditation with JFT style theme</li>
+					<li><code>[fetch_meditation book="both"]</code> - Display both JFT and SPAD in tabbed interface</li>
+					<li><code>[fetch_meditation book="both" tabs_layout="accordion"]</code> - Accordion layout (stacked)</li>
+					<li><code>[fetch_meditation book="both" jft_language="spanish" spad_language="german"]</code> - Different languages for each book</li>
 				</ul>
 			</div>
 
@@ -597,6 +796,7 @@ class FETCHMEDITATION {
 									[
 										'jft' => 'JFT',
 										'spad' => 'SPAD',
+										'both' => 'Both (Tabbed)',
 									]
 								),
 								$allowed_html
@@ -640,6 +840,25 @@ class FETCHMEDITATION {
 							);
 							?>
 							<p class="description">Choose the visual theme for the meditation display. Note: [jft] shortcode defaults to JFT Style, [spad] shortcode defaults to SPAD Style.</p>
+						</td>
+					</tr>
+					<tr valign="top" id="tabs-layout-container">
+						<th scope="row">Tabs Layout</th>
+						<td>
+							<?php
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_tabs_layout',
+									$tabs_layout,
+									[
+										'tabs' => 'Tabs (horizontal)',
+										'accordion' => 'Accordion (stacked)',
+									]
+								),
+								$allowed_html
+							);
+							?>
+							<p class="description">Only applies when Book is set to "Both (Tabbed)".</p>
 						</td>
 					</tr>
 					<tr valign="top" id="jft-language-container">

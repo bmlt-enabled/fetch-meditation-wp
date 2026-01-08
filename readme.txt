@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,11 +23,20 @@ Use one of the following shortcodes in your page or post:
 SHORTCODES
 Basic JFT: [jft]
 Basic SPAD: [spad]
+Both (Tabbed): [fetch_meditation book="both"]
 General: [fetch_meditation book="jft"]
 Layout: table, block [jft layout="block"] or [spad layout="table"]
 Language: JFT: english, french, german, italian, portuguese, russian, spanish, swedish. SPAD: english, german [jft language="spanish"] or [spad language="german"]
 Timezone (English Only): Any valid IANA [timezone](https://www.php.net/manual/en/timezones.php) [jft timezone="America/New_York"]
 Theme: default, jft-style, spad-style [jft theme="default"] or [fetch_meditation theme="spad-style"] (Note: [jft] defaults to jft-style, [spad] defaults to spad-style)
+
+TABBED DISPLAY (book="both" only)
+Display both JFT and SPAD meditations in an interactive interface:
+- Basic (horizontal tabs): [fetch_meditation book="both"]
+- Accordion layout: [fetch_meditation book="both" tabs_layout="accordion"]
+- Different languages: [fetch_meditation book="both" jft_language="spanish" spad_language="german"]
+- Different timezones: [fetch_meditation book="both" jft_timezone="America/New_York" spad_timezone="America/Chicago"]
+- Different themes: [fetch_meditation book="both" jft_theme="jft-style" spad_theme="spad-style"]
 
 MORE INFORMATION
 
@@ -41,6 +50,11 @@ MORE INFORMATION
 3. Add [jft], [spad], or [fetch_meditation] shortcode to your WordPress page/post.
 
 == Changelog ==
+
+= 1.4.5 =
+
+* Added tabbed interface support with book="both" attribute.
+* New tabs_layout attribute (tabs/accordion) for controlling display style.
 
 = 1.4.4 =
 
