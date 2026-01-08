@@ -1,0 +1,206 @@
+/* Tabs Container */
+.meditation-tabs-container {
+    margin: 20px auto;
+    max-width: 100%;
+}
+
+/* Tab List */
+.meditation-tab-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom: 2px solid #ddd;
+    gap: 0;
+}
+
+
+/* Tab Buttons */
+.meditation-tab-button {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.3s ease;
+    text-align: center;
+    outline: none;
+    position: relative;
+    top: 1px;
+}
+
+.meditation-tab-button:hover {
+    background: #e8e8e8;
+    color: #000;
+}
+
+.meditation-tab-button:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    z-index: 1;
+}
+
+.meditation-tab-button.active {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    border-bottom: 2px solid #fff;
+    top: 2px;
+}
+
+
+/* Tab Content Area */
+.meditation-tab-content {
+    border: 1px solid #ddd;
+    border-top: none;
+    padding: 20px;
+    background: #fff;
+    min-height: 200px;
+}
+
+
+/* Tab Panels */
+.meditation-tab-panel {
+    display: none;
+}
+
+.meditation-tab-panel.active {
+    display: block;
+}
+
+
+/* Individual Meditation Containers within Tabs */
+.meditation-tab-panel #meditation-container,
+.meditation-tab-panel #meditation-table-container {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Accordion Container */
+.meditation-accordion-container {
+    margin: 20px auto;
+    max-width: 100%;
+}
+
+/* Accordion Items */
+.meditation-accordion-item {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Accordion Buttons */
+.meditation-accordion-button {
+    width: 100%;
+    background: #f5f5f5;
+    border: none;
+    padding: 15px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.meditation-accordion-button:hover {
+    background: #e8e8e8;
+}
+
+.meditation-accordion-button:focus {
+    outline: 2px solid rgba(0, 123, 255, 0.5);
+    outline-offset: -2px;
+}
+
+.meditation-accordion-button.active {
+    background: #e0e0e0;
+}
+
+/* Accordion Icon */
+.meditation-accordion-icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #333;
+    transition: transform 0.3s ease;
+}
+
+.meditation-accordion-button.active .meditation-accordion-icon {
+    transform: rotate(180deg);
+}
+
+/* Accordion Panel */
+.meditation-accordion-panel {
+    display: none;
+    padding: 20px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
+
+.meditation-accordion-panel.active {
+    display: block;
+}
+
+/* Individual Meditation Containers within Accordion */
+.meditation-accordion-panel #meditation-container,
+.meditation-accordion-panel #meditation-table-container {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .meditation-tab-button {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .meditation-tab-content {
+        padding: 15px;
+    }
+    
+    .meditation-accordion-button {
+        padding: 12px 15px;
+        font-size: 16px;
+    }
+    
+    .meditation-accordion-panel {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .meditation-tab-button {
+        padding: 8px 12px;
+        font-size: 13px;
+        flex: 1;
+    }
+    
+    .meditation-tab-content {
+        padding: 10px;
+    }
+    
+    .meditation-accordion-button {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .meditation-accordion-panel {
+        padding: 10px;
+    }
+}
+
+/* Accessible hidden content */
+[hidden] {
+    display: none !important;
+}

@@ -5,6 +5,7 @@ jQuery(document).ready(function($) {
     const jftLanguageContainer = $('#jft-language-container');
     const spadLanguageContainer = $('#spad-language-container');
     const timezoneContainer = $('#timezone-container');
+    const tabsLayoutContainer = $('#tabs-layout-container');
 
     if (!bookSelect.length) return;
 
@@ -14,12 +15,18 @@ jQuery(document).ready(function($) {
         // Hide both containers first
         jftLanguageContainer.hide();
         spadLanguageContainer.hide();
+        tabsLayoutContainer.hide();
         
         // Show the appropriate container
         if (selectedBook === 'jft') {
             jftLanguageContainer.show();
         } else if (selectedBook === 'spad') {
             spadLanguageContainer.show();
+        } else if (selectedBook === 'both') {
+            // For 'both', show both language containers and tabs layout
+            jftLanguageContainer.show();
+            spadLanguageContainer.show();
+            tabsLayoutContainer.show();
         }
         
         // Update timezone visibility based on current selections
