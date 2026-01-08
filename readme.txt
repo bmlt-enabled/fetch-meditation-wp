@@ -5,7 +5,7 @@ Plugin URI: https://wordpress.org/plugins/fetch-meditation/
 Tags: na, fetch meditation, jft, spad, bmlt
 Requires PHP: 8.1
 Tested up to: 6.9
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,12 +29,20 @@ Layout: table, block [jft layout="block"] or [spad layout="table"]
 Language: JFT: english, french, german, italian, portuguese, russian, spanish, swedish. SPAD: english, german [jft language="spanish"] or [spad language="german"]
 Timezone (English Only): Any valid IANA [timezone](https://www.php.net/manual/en/timezones.php) [jft timezone="America/New_York"]
 Theme: default, jft-style, spad-style [jft theme="default"] or [fetch_meditation theme="spad-style"] (Note: [jft] defaults to jft-style, [spad] defaults to spad-style)
+Excerpt: Show quote and metadata with read more link (hides paragraphs/thought) [jft excerpt="true" read_more_url="/full-page/"]
 
 TABBED DISPLAY (book="both" only)
 Display both JFT and SPAD meditations in an interactive interface:
 - Basic (horizontal tabs): [fetch_meditation book="both"]
 - Accordion layout: [fetch_meditation book="both" tabs_layout="accordion"]
 - Tabs layout (default): [fetch_meditation book="both" tabs_layout="tabs"]
+
+EXCERPT MODE
+Show meditation preview on front page with link to full reading.
+Displays date, title, page, quote, and source with "Read more" link (skips paragraphs, thought, copyright).
+Typical workflow: Use excerpt on homepage, full meditation on dedicated page:
+- Homepage: [jft excerpt="true" read_more_url="/daily-meditation/"]
+- Full meditation page (/daily-meditation/): [jft excerpt="false"]
 
 MORE INFORMATION
 
@@ -49,6 +57,10 @@ MORE INFORMATION
 
 == Changelog ==
 
+= 1.4.7 =
+
+* Added excerpt mode with excerpt and read_more_url attributes for displaying meditation previews.
+
 = 1.4.6 =
 
 * Move how to section from settings.
@@ -57,6 +69,7 @@ MORE INFORMATION
 
 * Added tabbed interface support with book="both" attribute.
 * New tabs_layout attribute (tabs/accordion) for controlling display style.
+* Added excerpt mode with read_more_url parameter for displaying meditation previews.
 
 = 1.4.4 =
 
