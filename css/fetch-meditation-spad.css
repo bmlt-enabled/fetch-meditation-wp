@@ -56,6 +56,28 @@
     font-family: 'times new roman', serif;
 }
 
+/* Excerpt read more link */
+.meditation-read-more {
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.meditation-read-more:hover {
+    color: #005177;
+    text-decoration: underline;
+}
+
+.meditation-read-more-text {
+    color: #666;
+    font-style: italic;
+}
+
+.meditation-excerpt-more {
+    margin-top: 1em;
+}
+
 /* Error message styling */
 .meditation-error-container {
     padding: 15px;

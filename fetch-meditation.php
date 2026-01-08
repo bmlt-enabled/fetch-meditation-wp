@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.4.6
+ * Version:           1.4.7
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -272,6 +272,21 @@ class FETCHMEDITATION {
 		$layout   = self::determine_option( $attrs, 'layout' );
 		$timezone = self::determine_option( $attrs, 'timezone' );
 		$theme    = self::determine_option( $attrs, 'theme' );
+
+		// Determine excerpt mode - shortcode attribute overrides setting
+		if ( isset( $attrs['excerpt'] ) ) {
+			$excerpt = 'true' === strtolower( $attrs['excerpt'] );
+		} else {
+			$excerpt = 'true' === strtolower( get_option( 'fetch_meditation_excerpt', 'false' ) );
+		}
+
+		// Determine read more URL - shortcode attribute overrides setting
+		if ( isset( $attrs['read_more_url'] ) ) {
+			$read_more_url = esc_url( $attrs['read_more_url'] );
+		} else {
+			$read_more_url = esc_url( get_option( 'fetch_meditation_read_more_url', '' ) );
+		}
+
 		// Enqueue the appropriate CSS file based on theme
 		self::enqueue_theme_css( $theme );
 
@@ -290,7 +305,7 @@ class FETCHMEDITATION {
 			if ( is_string( $entry ) ) {
 				return static::render_error_message( $entry, $book, $language );
 			}
-			return static::build_layout( $entry, 'block' === $layout );
+			return static::build_layout( $entry, 'block' === $layout, $excerpt, $read_more_url );
 		} catch ( \Exception $e ) {
 			return static::render_error_message( $e->getMessage(), $book, $language );
 		} catch ( \Error $e ) {
@@ -486,28 +501,46 @@ class FETCHMEDITATION {
 		return $content;
 	}
 
-	private static function build_layout( object $entry, bool $in_block ): string {
+	private static function build_layout( object $entry, bool $in_block, bool $excerpt = false, string $read_more_url = '' ): string {
 		// Render Content As HTML Table or CSS Block Elements
 		$css_identifier = $in_block ? 'meditation' : 'meditation-table';
 
 		$paragraph_content = '';
 		$count            = 1;
 
-		foreach ( $entry->content as $c ) {
-			if ( $in_block ) {
-				$paragraph_content .= "\n    <p id=\"$css_identifier-content-$count\" class=\"$css_identifier-rendered-element\">$c</p>";
+		// In excerpt mode, skip paragraphs and just show read more link
+		if ( $excerpt ) {
+			$read_more_text = 'Read more...';
+			if ( ! empty( $read_more_url ) ) {
+				$read_more_link = '<a href="' . $read_more_url . '" class="meditation-read-more">' . $read_more_text . '</a>';
 			} else {
-				$paragraph_content .= "$c<br><br>";
+				$read_more_link = '<span class="meditation-read-more-text">' . $read_more_text . '</span>';
 			}
-			++$count;
+
+			if ( $in_block ) {
+				$paragraph_content = "\n    <p class=\"$css_identifier-rendered-element meditation-excerpt-more\">" . $read_more_link . '</p>\n';
+			} else {
+				$paragraph_content = $read_more_link . "<br><br>\n";
+			}
+		} else {
+			// Full content mode - show all paragraphs
+			foreach ( $entry->content as $c ) {
+				if ( $in_block ) {
+					$paragraph_content .= "\n    <p id=\"$css_identifier-content-$count\" class=\"$css_identifier-rendered-element\">$c</p>";
+				} else {
+					$paragraph_content .= "$c<br><br>";
+				}
+				++$count;
+			}
+			$paragraph_content .= "\n";
 		}
-		$paragraph_content .= "\n";
 
 		$content = "\n<div id=\"$css_identifier-container\" class=\"meditation-rendered-element\">\n";
 		if ( ! $in_block ) {
 			$content .= '<table align="center">' . "\n";
 		}
 
+		// Build data array - skip thought and copyright in excerpt mode
 		$data = [
 			'date'       => $entry->date,
 			'title'      => $entry->title,
@@ -515,8 +548,8 @@ class FETCHMEDITATION {
 			'quote'      => $entry->quote,
 			'source'     => $entry->source,
 			'paragraphs' => $paragraph_content,
-			'thought'    => $entry->thought,
-			'copyright'  => $entry->copyright,
+			'thought'    => $excerpt ? '' : $entry->thought,
+			'copyright'  => $excerpt ? '' : $entry->copyright,
 		];
 
 		foreach ( $data as $key => $value ) {
@@ -684,6 +717,24 @@ class FETCHMEDITATION {
 				'sanitize_callback' => 'sanitize_text_field',
 			]
 		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_excerpt',
+			[
+				'type'              => 'string',
+				'default'           => 'false',
+				'sanitize_callback' => 'sanitize_text_field',
+			]
+		);
+		register_setting(
+			self::SETTINGS_GROUP,
+			'fetch_meditation_read_more_url',
+			[
+				'type'              => 'string',
+				'default'           => '',
+				'sanitize_callback' => 'esc_url_raw',
+			]
+		);
 	}
 
 	public static function create_menu(): void {
@@ -712,6 +763,8 @@ class FETCHMEDITATION {
 		$meditation_layout   = esc_attr( get_option( 'fetch_meditation_layout', self::DEFAULT_LAYOUT ) );
 		$meditation_theme    = esc_attr( get_option( 'fetch_meditation_theme' ) );
 		$tabs_layout        = esc_attr( get_option( 'fetch_meditation_tabs_layout', self::DEFAULT_TABS_LAYOUT ) );
+		$excerpt            = esc_attr( get_option( 'fetch_meditation_excerpt', 'false' ) );
+		$read_more_url      = esc_attr( get_option( 'fetch_meditation_read_more_url', '' ) );
 		$jft_language       = esc_attr( get_option( 'fetch_meditation_jft_language' ) );
 		$spad_language      = esc_attr( get_option( 'fetch_meditation_spad_language' ) );
 		$timezone           = esc_attr( get_option( 'fetch_meditation_timezone' ) );
@@ -723,6 +776,13 @@ class FETCHMEDITATION {
 			'option' => [
 				'value'   => [],
 				'selected'   => [],
+			],
+			'input' => [
+				'type'  => [],
+				'id'    => [],
+				'name'  => [],
+				'value' => [],
+				'class' => [],
 			],
 		];
 		?>
@@ -871,6 +931,32 @@ class FETCHMEDITATION {
 							<p class="description">Only applies when English language is selected. Leave blank to use server default.</p>
 						</td>
 					</tr>
+					<tr valign="top">
+						<th scope="row">Excerpt Mode</th>
+						<td>
+							<?php
+							echo wp_kses(
+								static::render_select_option(
+									'fetch_meditation_excerpt',
+									$excerpt,
+									[
+										'false' => 'No (show full meditation)',
+										'true' => 'Yes (show excerpt)',
+									]
+								),
+								$allowed_html
+							);
+							?>
+							<p class="description">Show date, title, page, quote, and source with "Read more" link (hides paragraphs, thought, copyright). Use "Yes" on homepage, "No" on full meditation page.</p>
+						</td>
+					</tr>
+					<tr valign="top" id="read-more-url-container">
+						<th scope="row">Read More URL</th>
+						<td>
+							<input type="url" id="fetch_meditation_read_more_url" name="fetch_meditation_read_more_url" value="<?php echo esc_attr( $read_more_url ); ?>" class="regular-text" />
+							<p class="description">URL for the "Read more" link when excerpt mode is enabled (e.g., /daily-meditation/).</p>
+						</td>
+					</tr>
 				</table>
 				<?php submit_button(); ?>
 			</form>
@@ -901,8 +987,14 @@ class FETCHMEDITATION {
 						<code>[jft language="spanish"]</code> or <code>[spad language="german"]</code></li>
 
 					<li><strong>Timezone (English Only):</strong> Set timezone for English language only<br>
-						<code>[jft timezone="America/New_York"]</code><br>
-						Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
+					<code>[jft timezone="America/New_York"]</code><br>
+					Common timezones: America/New_York, America/Chicago, America/Denver, America/Los_Angeles, Europe/London, etc.</li>
+					
+					<li><strong>Excerpt Mode:</strong> Show date, title, page, quote, and source with a "Read more" link (hides paragraphs, thought, copyright)<br>
+					<code>excerpt="true"</code> - Enable excerpt mode (use on homepage)<br>
+					<code>excerpt="false"</code> - Show full meditation (use on the full meditation page)<br>
+					<code>read_more_url="/full-meditation-page/"</code> - URL for the read more link<br>
+					Typical setup: Homepage uses <code>[jft excerpt="true" read_more_url="/daily-meditation/"]</code>, then /daily-meditation/ page uses <code>[jft excerpt="false"]</code> (full version)</li>
 
 					<li><strong>Tabbed Display (book="both" only):</strong><br>
 						<code>tabs_layout="tabs"</code> or <code>tabs_layout="accordion"</code> - Controls display style (default: tabs)<br>
@@ -922,6 +1014,7 @@ class FETCHMEDITATION {
 					<li><code>[fetch_meditation book="both"]</code> - Display both JFT and SPAD in tabbed interface</li>
 					<li><code>[fetch_meditation book="both" tabs_layout="accordion"]</code> - Accordion layout (stacked)</li>
 					<li><code>[fetch_meditation book="both" jft_language="spanish" spad_language="german"]</code> - Different languages for each book</li>
+					<li><code>[jft excerpt="true" read_more_url="/daily-meditation/"]</code> - Show excerpt on homepage (full meditation page at /daily-meditation/ should use <code>[jft excerpt="false"]</code>)</li>
 				</ul>
 			</div>
 		</div>

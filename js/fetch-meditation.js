@@ -2,10 +2,12 @@ jQuery(document).ready(function($) {
     const bookSelect = $('#fetch_meditation_book');
     const jftLanguageSelect = $('#fetch_meditation_jft_language');
     const spadLanguageSelect = $('#fetch_meditation_spad_language');
+    const excerptSelect = $('#fetch_meditation_excerpt');
     const jftLanguageContainer = $('#jft-language-container');
     const spadLanguageContainer = $('#spad-language-container');
     const timezoneContainer = $('#timezone-container');
     const tabsLayoutContainer = $('#tabs-layout-container');
+    const readMoreUrlContainer = $('#read-more-url-container');
 
     if (!bookSelect.length) return;
 
@@ -50,11 +52,21 @@ jQuery(document).ready(function($) {
         }
     }
 
+    function updateReadMoreUrlVisibility() {
+        if (excerptSelect.val() === 'true') {
+            readMoreUrlContainer.show();
+        } else {
+            readMoreUrlContainer.hide();
+        }
+    }
+    
     // Initial update
     updateLanguageVisibility();
+    updateReadMoreUrlVisibility();
     
     // Listen for changes
     bookSelect.on('change', updateLanguageVisibility);
     jftLanguageSelect.on('change', updateTimezoneVisibility);
     spadLanguageSelect.on('change', updateTimezoneVisibility);
+    excerptSelect.on('change', updateReadMoreUrlVisibility);
 });
