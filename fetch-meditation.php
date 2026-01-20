@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.4.7
+ * Version:           1.4.8
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -363,6 +363,48 @@ class FETCHMEDITATION {
 		return sprintf( 'Unable to load today\'s %s meditation at this time. Please try refreshing the page or check back later.', strtoupper( $book ) );
 	}
 
+
+	/**
+	 * Get translated title for a book in a specific language
+	 *
+	 * @param string $book The book type (jft or spad)
+	 * @param string $language The language code
+	 * @return string Translated title
+	 */
+	private static function get_translated_title( string $book, string $language ): string {
+		$translations = [
+			'jft' => [
+				'english' => 'Just For Today',
+				'french' => 'Juste pour aujourd\'hui',
+				'german' => 'Nur für heute',
+				'italian' => 'Solo per oggi',
+				'portuguese' => 'Só por hoje',
+				'portuguese-pt' => 'Só por hoje',
+				'russian' => 'Только на сегодня',
+				'spanish' => 'Sólo por hoy',
+				'swedish' => 'Bara för idag',
+			],
+			'spad' => [
+				'english' => 'Spiritual Principle A Day',
+				'french' => 'Principe spirituel du jour',
+				'german' => 'Spirituelles Prinzip des Tages',
+				'italian' => 'Principio spirituale del giorno',
+				'portuguese' => 'Princípio espiritual do dia',
+				'portuguese-pt' => 'Princípio espiritual do dia',
+				'russian' => 'Духовный принцип дня',
+				'spanish' => 'Principio espiritual del día',
+				'swedish' => 'Andlig princip för dagen',
+			],
+		];
+
+		// Return translated title or fall back to English
+		if ( isset( $translations[ $book ][ $language ] ) ) {
+			return $translations[ $book ][ $language ];
+		}
+		return $translations[ $book ]['english'];
+	}
+
+
 	/**
 	 * Render both JFT and SPAD meditations in a tabbed interface
 	 *
@@ -431,17 +473,21 @@ class FETCHMEDITATION {
 
 		// Build tabbed or accordion interface
 		if ( 'accordion' === $tabs_layout ) {
-			return static::render_accordion( $instance_counter, $jft_content, $spad_content, $jft_theme, $spad_theme );
+			return static::render_accordion( $instance_counter, $jft_content, $spad_content, $jft_theme, $spad_theme, $jft_language, $spad_language );
 		}
+
+		// Get translated titles
+		$jft_title = esc_html( self::get_translated_title( 'jft', $jft_language ) );
+		$spad_title = esc_html( self::get_translated_title( 'spad', $spad_language ) );
 
 		// Build tabbed interface (horizontal)
 		$content = "\n<div class=\"meditation-tabs-container\" data-instance-id=\"{$instance_counter}\" data-layout=\"tabs\">\n";
 		$content .= "  <ul class=\"meditation-tab-list\" role=\"tablist\">\n";
 		$content .= "    <li role=\"presentation\">\n";
-		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"jft\" aria-selected=\"true\" aria-controls=\"meditation-panel-jft-{$instance_counter}\" tabindex=\"0\">Just For Today</button>\n";
+		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"jft\" aria-selected=\"true\" aria-controls=\"meditation-panel-jft-{$instance_counter}\" tabindex=\"0\">{$jft_title}</button>\n";
 		$content .= "    </li>\n";
 		$content .= "    <li role=\"presentation\">\n";
-		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"spad\" aria-selected=\"false\" aria-controls=\"meditation-panel-spad-{$instance_counter}\" tabindex=\"-1\">Spiritual Principle A Day</button>\n";
+		$content .= "      <button class=\"meditation-tab-button\" role=\"tab\" data-tab-id=\"spad\" aria-selected=\"false\" aria-controls=\"meditation-panel-spad-{$instance_counter}\" tabindex=\"-1\">{$spad_title}</button>\n";
 		$content .= "    </li>\n";
 		$content .= "  </ul>\n";
 		$content .= "  <div class=\"meditation-tab-content\">\n";
@@ -469,13 +515,17 @@ class FETCHMEDITATION {
 	 * @param string $spad_theme SPAD theme
 	 * @return string Rendered accordion HTML
 	 */
-	private static function render_accordion( int $instance_counter, string $jft_content, string $spad_content, string $jft_theme, string $spad_theme ): string {
+	private static function render_accordion( int $instance_counter, string $jft_content, string $spad_content, string $jft_theme, string $spad_theme, string $jft_language, string $spad_language ): string {
+		// Get translated titles
+		$jft_title = esc_html( self::get_translated_title( 'jft', $jft_language ) );
+		$spad_title = esc_html( self::get_translated_title( 'spad', $spad_language ) );
+
 		$content = "\n<div class=\"meditation-accordion-container\" data-instance-id=\"{$instance_counter}\" data-layout=\"accordion\">\n";
 
 		// JFT Accordion Item
 		$content .= "  <div class=\"meditation-accordion-item\">\n";
 		$content .= "    <button class=\"meditation-accordion-button active\" aria-expanded=\"true\" aria-controls=\"meditation-accordion-jft-{$instance_counter}\">\n";
-		$content .= "      <span>Just For Today</span>\n";
+		$content .= "      <span>{$jft_title}</span>\n";
 		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
 		$content .= "    </button>\n";
 		$content .= "    <div class=\"meditation-accordion-panel active\" id=\"meditation-accordion-jft-{$instance_counter}\">\n";
@@ -487,7 +537,7 @@ class FETCHMEDITATION {
 		// SPAD Accordion Item
 		$content .= "  <div class=\"meditation-accordion-item\">\n";
 		$content .= "    <button class=\"meditation-accordion-button\" aria-expanded=\"false\" aria-controls=\"meditation-accordion-spad-{$instance_counter}\">\n";
-		$content .= "      <span>Spiritual Principle A Day</span>\n";
+		$content .= "      <span>{$spad_title}</span>\n";
 		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
 		$content .= "    </button>\n";
 		$content .= "    <div class=\"meditation-accordion-panel\" id=\"meditation-accordion-spad-{$instance_counter}\" hidden>\n";
