@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.4.9
+ * Version:           1.5.0
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -492,11 +492,11 @@ class FETCHMEDITATION {
 		$content .= "  </ul>\n";
 		$content .= "  <div class=\"meditation-tab-content\">\n";
 		$content .= "    <div class=\"meditation-tab-panel\" role=\"tabpanel\" id=\"meditation-panel-jft-{$instance_counter}\" data-tab-id=\"jft\" aria-labelledby=\"tab-jft\">\n";
-		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme ) . "</style>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme, '#meditation-panel-jft-' . $instance_counter ) . "</style>\n";
 		$content .= $jft_content;
 		$content .= "    </div>\n";
 		$content .= "    <div class=\"meditation-tab-panel\" role=\"tabpanel\" id=\"meditation-panel-spad-{$instance_counter}\" data-tab-id=\"spad\" aria-labelledby=\"tab-spad\" hidden>\n";
-		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme ) . "</style>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme, '#meditation-panel-spad-' . $instance_counter ) . "</style>\n";
 		$content .= $spad_content;
 		$content .= "    </div>\n";
 		$content .= "  </div>\n";
@@ -529,7 +529,7 @@ class FETCHMEDITATION {
 		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
 		$content .= "    </button>\n";
 		$content .= "    <div class=\"meditation-accordion-panel active\" id=\"meditation-accordion-jft-{$instance_counter}\">\n";
-		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme ) . "</style>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $jft_theme, '#meditation-accordion-jft-' . $instance_counter ) . "</style>\n";
 		$content .= $jft_content;
 		$content .= "    </div>\n";
 		$content .= "  </div>\n";
@@ -541,7 +541,7 @@ class FETCHMEDITATION {
 		$content .= "      <span class=\"meditation-accordion-icon\"></span>\n";
 		$content .= "    </button>\n";
 		$content .= "    <div class=\"meditation-accordion-panel\" id=\"meditation-accordion-spad-{$instance_counter}\" hidden>\n";
-		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme ) . "</style>\n";
+		$content .= '      <style>' . static::get_inline_theme_css( $spad_theme, '#meditation-accordion-spad-' . $instance_counter ) . "</style>\n";
 		$content .= $spad_content;
 		$content .= "    </div>\n";
 		$content .= "  </div>\n";
@@ -689,7 +689,7 @@ class FETCHMEDITATION {
 	 * @param string $theme The theme name
 	 * @return string CSS content
 	 */
-	private static function get_inline_theme_css( string $theme ): string {
+	private static function get_inline_theme_css( string $theme, string $scope_selector = '' ): string {
 		$css_file = match ( strtolower( $theme ) ) {
 			'jft-style' => 'fetch-meditation-jft.css',
 			'spad-style' => 'fetch-meditation-spad.css',
@@ -697,7 +697,11 @@ class FETCHMEDITATION {
 		};
 		$css_path = plugin_dir_path( __FILE__ ) . 'css/' . $css_file;
 		if ( file_exists( $css_path ) ) {
-			return wp_strip_all_tags( file_get_contents( $css_path ) );
+			$css = wp_strip_all_tags( file_get_contents( $css_path ) );
+			if ( $scope_selector ) {
+				$css = preg_replace( '/^(\s*)#meditation-/m', '$1' . $scope_selector . ' #meditation-', $css );
+			}
+			return $css;
 		}
 		return '';
 	}
