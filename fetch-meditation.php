@@ -17,7 +17,9 @@ namespace FetchMeditationPlugin;
 
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use FetchMeditation\JFTLanguage;
 use FetchMeditation\JFTSettings;
