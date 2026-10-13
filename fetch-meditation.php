@@ -6,7 +6,7 @@
  * Install:           Drop this directory in the "wp-content/plugins/" directory and activate it. You need to specify "[fetch_meditation]", "[jft]", or "[spad]" in the code section of a page or a post.
  * Contributors:      pjaudiomv, bmltenabled
  * Author:            bmltenabled
- * Version:           1.5.3
+ * Version:           1.5.4
  * Requires PHP:      8.1
  * Requires at least: 6.2
  * License:           GPL v2 or later
@@ -154,6 +154,7 @@ class FETCHMEDITATION {
 		// Special case mappings
 		$special_cases = [
 			'portuguese-pt' => 'PortuguesePT',
+			'french-ca'     => 'FrenchCA',
 		];
 
 		if ( isset( $special_cases[ $language ] ) ) {
@@ -200,6 +201,7 @@ class FETCHMEDITATION {
 		// Special case mappings
 		$special_cases = [
 			'PortuguesePT' => 'portuguese-pt',
+			'FrenchCA'     => 'french-ca',
 		];
 
 		if ( isset( $special_cases[ $case_name ] ) ) {
@@ -220,6 +222,8 @@ class FETCHMEDITATION {
 		$special_cases = [
 			'PortuguesePT' => 'Portuguese (PT)',
 			'Portuguese'   => 'Portuguese (BR)',
+			'French'       => 'French (FR)',
+			'FrenchCA'     => 'French (CA)',
 		];
 
 		if ( isset( $special_cases[ $case_name ] ) ) {
